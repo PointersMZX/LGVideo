@@ -42,7 +42,11 @@ if (isDev) {
 }
 
 // --- Application Setup ---
-app.setPath('userData', path.join(__dirname, 'userData'));
+// 打包版：userData 放安装目录旁（与 exe 同级，可写）；dev 版：app/userData
+// 注意：不能指进 asar 内部（app.asar/userData 在 Windows 上建不出目录，
+// 单实例锁 / 持久层会静默失败）
+const dataRoot = app.isPackaged ? path.dirname(process.execPath) : __dirname;
+app.setPath('userData', path.join(dataRoot, 'userData'));
 
 // --- 退出标志（关窗 = 隐藏到托盘，仅托盘菜单「退出」才真正退出）---
 let isQuitting = false;
