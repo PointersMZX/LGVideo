@@ -1,0 +1,16 @@
+{
+  "name": "xingyu-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "XingyuVideo 构建壳（基底 = AudioVisual 1.0.9 解包，app/ 目录为打包源）",
+  "main": "app/main.js",
+  "scripts": {
+    "dev": "electron app",
+    "build:win": "node scripts/build-win.mjs",
+    "pack:win": "electron-builder --dir --x64 -c.directories.output=.build-tmp/win-64"
+  },
+  "devDependencies": {
+    "electron": "33.4.11",
+    "electron-builder": "26.15.7"
+  }
+}

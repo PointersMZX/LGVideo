@@ -1,0 +1,13 @@
+{
+  "name": "xingyu-video",
+  "version": "1.0.0",
+  "description": "XingyuVideo - The key to unlock all streams.",
+  "main": "main.js",
+  "author": {
+    "name": "XingyuVideo"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "electron-updater": "^6.6.2"
+  }
+}

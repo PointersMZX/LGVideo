@@ -1,0 +1,23 @@
+# XingyuVideo — electron-builder 配置（只产出完整安装目录，NSIS 由维护者自行制作）
+appId: com.xingyu.video
+productName: XingyuVideo
+copyright: Copyright © 2026 XingyuVideo
+
+directories:
+  output: release
+  buildResources: build
+
+asar: true
+# app/ 目录内无 native 模块（asar 里 node_modules 全纯 JS），跳过 @electron/rebuild
+npmRebuild: false
+
+# 打包源 = app/（原 AudioVisual asar 根布局：package.json + main.js + index.html + assets/ + node_modules/）
+files:
+  - app/**
+
+extraResources:
+  - from: resources/app-update.yml
+    to: app-update.yml
+
+win:
+  icon: build/icon.ico
