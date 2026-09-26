@@ -35,9 +35,6 @@ contextBridge.exposeInMainWorld('voidAPI', {
   // --- 浏览器会话（webview 内存 session 重置）---
   resetBrowserSession: () => ipcRenderer.send('reset-browser-session'),
 
-  // --- 解析引擎（站点侧主动探测转发，链路保留）---
-  onFastParseUrl: (callback) => ipcRenderer.on('fast-parse-url', (event, url) => callback(url)),
-
   // --- 播放器独立窗口 ---
   openPlayerWindow: (payload) => ipcRenderer.send('player:open-window', payload),
 

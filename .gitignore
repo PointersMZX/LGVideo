@@ -2,6 +2,5 @@ node_modules/
 release/
 .build-tmp/
 app/userData/
-example/
 *.log
 .DS_Store

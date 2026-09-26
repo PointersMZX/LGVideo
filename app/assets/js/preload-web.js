@@ -104,26 +104,8 @@ ipcRenderer.on('update-styles', (event, cssContent) => {
   applyStyles(cssContent);
 });
 
-// --- 主动式解析逻辑 ---
-// 监听点击事件，主动发现换集行为
-document.addEventListener('click', (event) => {
-  // 爱奇艺换集检测
-  if (window.location.hostname.includes('iqiyi.com')) {
-    const anchor = event.target.closest('a');
-    if (anchor && anchor.href && anchor.href.includes('iqiyi.com/v_')) {
-      console.log('[preload-web] Detected iQiyi episode click:', anchor.href);
-      ipcRenderer.send('proactive-parse-request', anchor.href);
-    }
-  }
-  // 芒果 TV 换集检测
-  if (window.location.hostname.includes('mgtv.com')) {
-    const anchor = event.target.closest('a');
-    if (anchor && anchor.href && anchor.href.includes('mgtv.com/b/')) {
-      console.log('[preload-web] Detected Mango TV episode click:', anchor.href);
-      ipcRenderer.send('proactive-parse-request', anchor.href);
-    }
-  }
-}, true); // 使用捕获阶段以最快速度拦截事件
+// 注意：自动解析链路已按维护者要求移除（解析仅由「解析」按钮单击触发），
+// 此处不再向主进程发送 proactive-parse-request。
 
 
 // --- DOM 监控 ---
@@ -280,11 +262,4 @@ ipcRenderer.on('apply-embed-video', (event, url) => {
   startInjectionGuardian(url);
 });
 
-// 核心：页面加载的第一时间主动请求解析，解决“第一次注入慢”
-(() => {
-  const url = window.location.href;
-  const isVideoPage = url.includes('iqiyi.com/v_') || url.includes('mgtv.com/b/') || url.includes('v.qq.com/x/cover/');
-  if (isVideoPage) {
-    ipcRenderer.send('proactive-parse-request', url);
-  }
-})();
+// 页面初始加载不再主动请求解析（维护者要求：解析只由「解析」按钮触发）

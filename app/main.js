@@ -478,11 +478,8 @@ ipcMain.on('player:window-controls', (event, action) => {
   }
 });
 
-// --- 浏览器会话重置 / 站点侧主动解析转发（保留原链路）---
+// --- 浏览器会话重置 ---
 ipcMain.on('reset-browser-session', () => { clearBrowserSession(); });
-ipcMain.on('proactive-parse-request', (event, url) => {
-  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('fast-parse-url', url);
-});
 
 // --- 托盘跳转页面 ---
 ipcMain.on('navigate-page', (event, page) => {

@@ -1,12 +1,6 @@
 # XingyuVideo
 
-星语视频（XingyuVideo）——影视解析 / 第三方导航 / 本地视频 桌面端。
-
-## 来源与基线
-
-- **代码基底**：解包自 `example/AudioVisual-1.0.9-x64.exe`（NSIS 内 `app-64.7z` → Electron 树 → `resources/app.asar`），应用代码在 `app/`。解析引擎（平台链接 + 解析接口 + iframe 注入）与 Widevine 注入链路保留。
-- **UI 基底**：XingyuMusic 的 xingyu（紫金黑）主题元素 + 液态玻璃（WebGL SDF 折射 + 7 色色散 + 边缘流光 + 指针高光，vanilla 移植自 XingyuMusic-desktop LiquidGlass）。
-- **第二轮（功能大改）设计参照**：Pointers-BOX（固定左导航 + 卡片流设置 + `<webview>` 多标签内嵌浏览器 + 内存会话 + 标签休眠 + 关窗藏托盘/单实例锁 + 双渠道更新）；XingyuMusic（关于页文案 + 主题 `:root` 整包变量注入/取色器机制）。
+星雨影视（XingyuVideo）——影视解析 / 第三方导航 / 本地视频 桌面端。
 
 ## 页面（左侧固定导航，Ctrl+1..4 切换）
 

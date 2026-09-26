@@ -100,8 +100,6 @@
     return 'https://www.bing.com/search?q=' + encodeURIComponent(input);
   };
 
-  const isVideoPage = (url) => url.includes('iqiyi.com/v_') || url.includes('mgtv.com/b/') || url.includes('v.qq.com/x/cover/');
-
   // ---------- 标签状态机（照 Pointers-BOX browserStore）----------
   function newTab(url) {
     const id = 'tab-' + (++tabCounter);
@@ -238,14 +236,9 @@
       if (isApiUrl) {
         urlInput.value = currentYoukuUrl || currentVideoUrl;
       } else {
-        const prevVideoUrl = currentVideoUrl;
         urlInput.value = url;
         currentVideoUrl = url;
-        // 视频页自动解析（原 fast-parse 链路：爱优腾芒B 换集脉冲）
-        if (isVideoPage(url) && mode === 'parse' && prevVideoUrl && prevVideoUrl !== url) {
-          isCurrentlyParsing = true;
-          triggerParse();
-        }
+        // 不再自动解析：仅在用户单击「解析」按钮时触发一次（维护者要求：不要自动解析）
       }
       // 导航到第三方导航站点 → 自动切 nav 模式
       const site = settings.dramaSites.find(s => url.startsWith(s.value));
@@ -487,7 +480,7 @@
         else navigate(sel, true);
       });
       apiSelect.addEventListener('change', () => {
-        if (platformSelect.value !== 'https://www.youku.com') triggerParse();
+        // 换接口不再自动解析（维护者要求：解析只由「解析」按钮单击触发）
       });
       parseButton.addEventListener('click', () => {
         loadingOverlay.classList.remove('hidden');
@@ -504,15 +497,6 @@
       modeToggle.addEventListener('click', () => switchMode(mode === 'parse' ? 'nav' : 'parse'));
 
       youkuUrlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') parseYoukuUrl(); });
-
-      // 站点侧主动解析脉冲（preload-web → main 转发）
-      window.voidAPI.onFastParseUrl((url) => {
-        if (!url) return;
-        currentVideoUrl = url;
-        urlInput.value = url;
-        isCurrentlyParsing = true;
-        triggerParse();
-      });
 
       // 休眠 tick
       sleepTimer = setInterval(sleepTick, 60000);
