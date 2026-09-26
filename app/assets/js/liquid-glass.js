@@ -2,13 +2,14 @@
 // 自 XingyuMusic-desktop LiquidGlass/index.vue（Vue3 + WebGL1，零外部依赖）移植为 vanilla JS：
 // - 逻辑与 Vue 版 1:1（主题变量轮询 / 背景栅格化 / 指针追踪 / SDF 折射渲染循环 / CSS 兜底切换）
 // - 兜底：WebGL 不可用或着色器编译失败时 canvas 保持隐藏，liquid-glass.css 的纯 CSS 玻璃生效
-// - 面板 = .top-bar（顶栏，toolbar 参数）；栅格化层 = body（舞台光背景）+ .container（内容背景）
+// - 面板 = .titlebar（顶栏，toolbar 参数）；栅格化层 = body（舞台光背景）+ .shell（内容背景）
 const GLASS_CONFIG = {
   targets: [
-    { target: '.top-bar', variant: 'toolbar' },
+    { target: '.titlebar', variant: 'toolbar' },
+    { target: '#player-controls', variant: 'player' },
   ],
-  // 背景堆叠（自下而上）：body 底色 + 舞台光渐变 → .container 内容背景（半透，压一层）
-  rootSelector: '.container',
+  // 背景堆叠（自下而上）：body 底色 + 舞台光多层 background-image → .shell 内容背景（半透，压一层）
+  rootSelector: '.shell',
   layerSelector: 'body',
 }
 

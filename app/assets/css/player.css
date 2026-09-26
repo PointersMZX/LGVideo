@@ -1,0 +1,392 @@
+/* ===== XingyuVideo · 播放器（窗口内全屏叠层 / 独立新窗口共用） =====
+   精雕细琢控制条：进度（缓冲段+悬停预览+拖拽）/ 音量 / 倍速 / A-B 循环 / 上下集 /
+   全屏 / 快捷键 / 3s 自动隐藏 / 进度记忆 / 出错态。控制条挂液态玻璃（player 参数）。 */
+
+#player-layer,
+#player-window-root {
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+}
+
+#player-layer.hidden {
+    display: none;
+}
+
+#player-window-root.hidden {
+    display: none;
+}
+
+/* 细顶条：拖拽区 + 标题 + 关闭播放器（叠在视频之上，渐变压暗） */
+.player-topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px 0 18px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, transparent 100%);
+    z-index: 5;
+    -webkit-app-region: drag;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+
+.player-topbar .window-control-button {
+    -webkit-app-region: no-drag;
+    width: 34px;
+    height: 30px;
+}
+
+.player-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f0ecff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.3px;
+}
+
+/* 视频主体 */
+#player-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    cursor: none;
+}
+
+/* 鼠标活动时显示顶条与控制条 */
+#player-layer:not(.idle) .player-topbar,
+#player-window-root:not(.idle) .player-topbar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#player-layer.idle {
+    cursor: none;
+}
+
+/* 出错态 */
+#player-error {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #f0ecff;
+    font-size: 14px;
+}
+
+#player-error.hidden {
+    display: none;
+}
+
+#player-error .err-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e8c98a;
+}
+
+#player-error .err-desc {
+    font-size: 12.5px;
+    color: #9a8fc0;
+    max-width: 420px;
+    text-align: center;
+    line-height: 1.7;
+}
+
+#player-error button {
+    margin-top: 6px;
+    padding: 8px 26px;
+    background: #8b30d6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+#player-error button:hover {
+    background: #a34ce6;
+}
+
+/* 集数面板（我的影视上下文） */
+.player-episodes {
+    position: absolute;
+    top: 48px;
+    right: 12px;
+    bottom: 76px;
+    width: 220px;
+    z-index: 6;
+    background: rgba(13, 7, 22, 0.78);
+    backdrop-filter: blur(14px) saturate(130%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.player-episodes.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.player-episodes h4 {
+    font-size: 12px;
+    color: #9a8fc0;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.pe-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: #f0ecff;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pe-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.pe-item.current {
+    background: rgba(139, 48, 214, 0.25);
+    color: #e8c98a;
+}
+
+.pe-item .pe-type {
+    font-size: 9.5px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #9a8fc0;
+    flex-shrink: 0;
+}
+
+/* ===== 控制条（液态玻璃面板，liquid-glass.css 挂 #player-controls） ===== */
+#player-controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 6;
+    padding: 6px 18px 12px;
+    transition: opacity 0.25s ease;
+}
+
+#player-layer.idle #player-controls,
+#player-window-root.idle #player-controls {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 进度行：14px 命中区，::before 画 4px 轨道 */
+.pc-progress {
+    position: relative;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 2px;
+}
+
+.pc-progress::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.pc-buffer {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 4px;
+    width: 0;
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 2px;
+}
+
+.pc-segment {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 4px;
+    width: 0;
+    background: linear-gradient(90deg, #8b30d6, #e8c98a);
+    border-radius: 2px;
+}
+
+.pc-thumb {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e8c98a;
+    box-shadow: 0 0 8px rgba(232, 201, 138, 0.6);
+    left: 0;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.pc-progress:hover .pc-thumb,
+.pc-progress.dragging .pc-thumb {
+    opacity: 1;
+}
+
+.pc-hover-time {
+    position: absolute;
+    bottom: 16px;
+    transform: translateX(-50%);
+    background: rgba(13, 7, 22, 0.92);
+    border: 1px solid rgba(232, 201, 138, 0.3);
+    color: #f0ecff;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.pc-progress:hover .pc-hover-time {
+    opacity: 1;
+}
+
+/* 控制行 */
+.pc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pc-btn {
+    min-width: 34px;
+    height: 32px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #f0ecff;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+    font-family: inherit;
+}
+
+.pc-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.pc-btn.big {
+    width: 42px;
+    min-width: 42px;
+    height: 38px;
+    font-size: 17px;
+}
+
+.pc-btn.on {
+    background: rgba(139, 48, 214, 0.3);
+    color: #e8c98a;
+}
+
+.pc-time {
+    font-size: 12px;
+    color: #cfc7e8;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.3px;
+    margin: 0 4px;
+}
+
+.pc-spacer {
+    flex: 1;
+}
+
+.pc-select {
+    height: 30px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: none;
+    border-radius: 7px;
+    color: #f0ecff;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+}
+
+.pc-select option {
+    background: #170d24;
+    color: #f0ecff;
+}
+
+.pc-vol {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pc-volume {
+    width: 76px;
+    height: 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+
+.pc-volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #e8c98a;
+    cursor: pointer;
+}
+
+/* A-B 徽标 */
+.pc-btn .ab-tag {
+    font-size: 10px;
+    margin-left: 3px;
+    color: #e8c98a;
+}
