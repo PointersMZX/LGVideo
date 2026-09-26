@@ -1464,6 +1464,8 @@ input[type="color"] {
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    /* 永不拦截点击：即便遮罩异常滞留也不会把界面"卡死" */
+    pointer-events: none;
 }
 
 #loading-overlay.hidden {

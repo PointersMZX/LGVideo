@@ -80,6 +80,20 @@
   let mode = 'parse';        // 'parse' 普通解析 | 'nav' 第三方导航
   let youkuActive = false;
   let sleepTimer = 0;
+  let loadingSafeTimer = 0;  // 转圈遮罩兜底：无论 webview 是否触发 did-stop，N 秒后强制隐藏，杜绝卡死
+
+  // 显示转圈遮罩并挂一个安全定时器（保证它绝不会滞留挡住界面）
+  function showLoading() {
+    loadingOverlay.classList.remove('hidden');
+    clearTimeout(loadingSafeTimer);
+    loadingSafeTimer = setTimeout(() => {
+      loadingOverlay.classList.add('hidden');
+    }, 6000);
+  }
+  function hideLoading() {
+    clearTimeout(loadingSafeTimer);
+    loadingOverlay.classList.add('hidden');
+  }
 
   // ---------- 工具 ----------
   const hostOf = (url) => {
@@ -212,13 +226,14 @@
     wv.addEventListener('did-start-loading', () => {
       if (id === activeId) {
         progressBar.style.width = '35%';
-        if (!youkuActive) loadingOverlay.classList.remove('hidden');
+        // 只在「解析」动作时弹转圈层（triggerParse/parseYoukuUrl 内处理，且有 1.5s 兜底）；
+        // 普通导航/起始页加载不再弹全屏遮罩，避免 API 页不触发 did-stop-loading 时转圈卡死
       }
     });
     wv.addEventListener('did-stop-loading', () => {
       if (id === activeId) {
         progressBar.style.width = '0';
-        loadingOverlay.classList.add('hidden');
+        hideLoading();
         syncNavState();
       }
     });
@@ -250,8 +265,8 @@
       if (tab && e.url) tab.url = e.url;
     });
     wv.addEventListener('did-fail-load', (e) => {
-      if (e.errorCode === -3) return; // ABORTED
-      if (id === activeId) loadingOverlay.classList.add('hidden');
+      if (e.errorCode === -3) return; // ABORTED（被新导航取代，由新导航的 did-start 负责显示）
+      if (id === activeId) hideLoading();
     });
     wv.addEventListener('dom-ready', () => {
       injectGuestCSS(wv);
@@ -348,21 +363,21 @@
     if (isHomepage) {
       showToast('当前页面为平台首页，请选择具体的视频后再点击解析。', 'error');
       isCurrentlyParsing = false;
-      loadingOverlay.classList.add('hidden');
+      hideLoading();
       return;
     }
     if (isCurrentlyParsing && currentVideoUrl) {
-      loadingOverlay.classList.remove('hidden');
+      showLoading();
       const api = settings.apiList.find(a => a.value === apiSelect.value) || settings.apiList[0];
       const finalUrl = (api ? api.value : '') + currentVideoUrl;
       const wv = webviewEls.get(activeId);
       if (wv) {
         try { wv.loadURL(finalUrl); } catch (e) {}
       }
-      setTimeout(() => loadingOverlay.classList.add('hidden'), 1500);
+      setTimeout(hideLoading, 1500);
     } else {
       console.warn('[Browser] 解析失败：缺少 URL 或非解析态');
-      loadingOverlay.classList.add('hidden');
+      hideLoading();
     }
   }
 
@@ -374,10 +389,10 @@
     urlInput.value = u;
     const api = settings.apiList.find(a => a.value === apiSelect.value) || settings.apiList[0];
     const finalUrl = (api ? api.value : '') + u;
-    loadingOverlay.classList.remove('hidden');
+    showLoading();
     const wv = webviewEls.get(activeId);
     if (wv) { try { wv.loadURL(finalUrl); } catch (e) {} youkuPage.style.display = 'none'; }
-    setTimeout(() => loadingOverlay.classList.add('hidden'), 1500);
+    setTimeout(hideLoading, 1500);
   }
 
   // ---------- 模式切换（普通解析 ⇄ 第三方导航）----------
@@ -483,7 +498,7 @@
         // 换接口不再自动解析（维护者要求：解析只由「解析」按钮单击触发）
       });
       parseButton.addEventListener('click', () => {
-        loadingOverlay.classList.remove('hidden');
+        showLoading();
         if (platformSelect.value === 'https://www.youku.com') parseYoukuUrl();
         else {
           isCurrentlyParsing = true;
