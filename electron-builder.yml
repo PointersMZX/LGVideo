@@ -6,14 +6,12 @@ copyright: Copyright © 2026 XingyuVideo
 directories:
   output: release
   buildResources: build
+  # 标准 app 目录模式：打包源 = app/（其内 package.json 的 main 字段为运行时入口）
+  app: app
 
 asar: true
 # app/ 目录内无 native 模块（asar 里 node_modules 全纯 JS），跳过 @electron/rebuild
 npmRebuild: false
-
-# 打包源 = app/（原 AudioVisual asar 根布局：package.json + main.js + index.html + assets/ + node_modules/）
-files:
-  - app/**
 
 extraResources:
   - from: resources/app-update.yml
