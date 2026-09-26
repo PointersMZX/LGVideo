@@ -95,6 +95,18 @@ for (const outName of ['win-64', 'win7-64']) {
   console.log(`${outName}: locales 精简为 ${KEEP_LOCALES.join('/')}（${readdirSync(localesDir).length} 个）`)
 }
 
+// 体积压缩：dxcompiler/dxil 裁剪（仅当 Electron 发行版携带时；swiftshader 兜底保留）
+for (const outName of ['win-64', 'win7-64']) {
+  for (const f of ['dxcompiler.dll', 'dxil.dll']) {
+    const p = join(releaseDir, outName, f)
+    if (existsSync(p)) {
+      const size = statSync(p).size
+      rmSync(p)
+      console.log(`${outName}: 删除 ${f}（${Math.round(size / 1048576)}MB）`)
+    }
+  }
+}
+
 const e33 = statSync(join(releaseDir, 'win-64', 'XingyuVideo.exe'))
 const e22 = statSync(join(releaseDir, 'win7-64', 'XingyuVideo.exe'))
 console.log(`\nwin-64（Electron ${E_MODERN}）: ${e33.size} bytes → release/win-64/`)

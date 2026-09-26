@@ -1,43 +1,49 @@
-// preload-ui.js
+// preload-ui.js — XingyuVideo 主窗 preload
 
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('voidAPI', {
-  // Updated to accept themeVars
-  navigate: (url, isPlatformSwitch = false, themeVars = null) => ipcRenderer.send('navigate', { url, isPlatformSwitch, themeVars }),
-
-  embedVideo: (url) => ipcRenderer.send('embed-video', url),
-
-  goBack: () => ipcRenderer.send('go-back'),
-  goForward: () => ipcRenderer.send('go-forward'),
-  setViewVisibility: (visible) => ipcRenderer.send('set-view-visibility', visible),
-
-  onUrlUpdate: (callback) => ipcRenderer.on('url-updated', (event, ...args) => callback(...args)),
-
-  onNavStateUpdate: (callback) => ipcRenderer.on('nav-state-updated', (event, ...args) => callback(...args)),
-
-  // Channel for the main process to notify when content is ready
-  onLoadFinished: (callback) => ipcRenderer.on('load-finished', () => callback()),
-
-  // Used to sync sidebar state on startup from memory
-  onInitSidebarState: (callback) => ipcRenderer.on('init-sidebar-state', (event, ...args) => callback(...args)),
-
-  // Proactive parse bridge
-  onFastParseUrl: (callback) => ipcRenderer.on('fast-parse-url', (event, ...args) => callback(...args)),
-
+  // --- 窗口控制 ---
+  showWindow: () => ipcRenderer.send('show-window'),
   minimizeWindow: () => ipcRenderer.send('minimize-window'),
   maximizeWindow: () => ipcRenderer.send('maximize-window'),
+  closeWindow: () => ipcRenderer.send('close-window'),
+
+  // --- 页面（左导航 / 托盘跳转）---
+  onInitPage: (callback) => ipcRenderer.on('init-page', (event, page) => callback(page)),
+  onPageNavigate: (callback) => ipcRenderer.on('page-navigate', (event, page) => callback(page)),
+
+  // --- 设置 / 影视库 / 播放进度（JSON 持久层，主进程原子写）---
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  setSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
+  getLibrary: () => ipcRenderer.invoke('library:get'),
+  setLibrary: (items) => ipcRenderer.invoke('library:set', items),
+  getPosition: (file) => ipcRenderer.invoke('position:get', file),
+  setPosition: (file, pos) => ipcRenderer.invoke('position:set', file, pos),
+  clearPosition: (file) => ipcRenderer.invoke('position:clear', file),
+
+  // --- 本地视频（目录扫描 / 文件与目录对话框）---
+  scanDir: (dir) => ipcRenderer.invoke('scan:dir', dir),
+  scanDirs: (dirs) => ipcRenderer.invoke('scan:dirs', dirs),
+  openFileDialog: () => ipcRenderer.invoke('dialog:open-files'),
+  openDirsDialog: () => ipcRenderer.invoke('dialog:open-dirs'),
+
+  // --- 其它 ---
+  getVersion: () => ipcRenderer.invoke('get-version'),
   openExternalLink: (url) => ipcRenderer.send('open-external-link', url),
 
-  checkForUpdates: () => ipcRenderer.send('check-for-updates'),
-  downloadUpdate: () => ipcRenderer.send('download-update'),
-  quitAndInstall: () => ipcRenderer.send('quit-and-install'),
-  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, ...args) => callback(...args)),
-  onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', (event, ...args) => callback(...args)),
-  onUpdateDownloadProgress: (callback) => ipcRenderer.on('update-download-progress', (event, ...args) => callback(...args)),
-  onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (event, ...args) => callback(...args)),
-  onUpdateError: (callback) => ipcRenderer.on('update-error', (event, ...args) => callback(...args)),
-  closeWindow: () => ipcRenderer.send('close-window'),
-  toggleSidebar: (isCollapsed) => ipcRenderer.send('sidebar-toggle', isCollapsed),
-  showWindow: () => ipcRenderer.send('show-window'),
+  // --- 浏览器会话（webview 内存 session 重置）---
+  resetBrowserSession: () => ipcRenderer.send('reset-browser-session'),
+
+  // --- 解析引擎（站点侧主动探测转发，链路保留）---
+  onFastParseUrl: (callback) => ipcRenderer.on('fast-parse-url', (event, url) => callback(url)),
+
+  // --- 播放器独立窗口 ---
+  openPlayerWindow: (payload) => ipcRenderer.send('player:open-window', payload),
+
+  // --- 双渠道更新（GitHub 官方 / Gitee 镜像；主进程手动 API 检查 + 流式下载 + 唤起安装器）---
+  checkForUpdates: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
+  onUpdateEvent: (callback) => ipcRenderer.on('update-event', (event, payload) => callback(payload)),
 });

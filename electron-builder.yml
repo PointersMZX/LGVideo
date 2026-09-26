@@ -10,12 +10,19 @@ directories:
   app: app
 
 asar: true
-# app/ 目录内无 native 模块（asar 里 node_modules 全纯 JS），跳过 @electron/rebuild
+# app/ 目录内无 native 模块（纯 JS 依赖已全量移除），跳过 @electron/rebuild
 npmRebuild: false
 
+# userData/ 是 dev 期运行时数据（主进程 setPath 落在 app 目录旁），严禁进包
+files:
+  - "**/*"
+  - "!userData"
+  - "!userData/**"
+
+# 托盘图标（主进程 resourcesRoot/icons/tray.png；开发期 = 项目 build/）
 extraResources:
-  - from: resources/app-update.yml
-    to: app-update.yml
+  - from: build/tray.png
+    to: icons/tray.png
 
 win:
   icon: build/icon.ico

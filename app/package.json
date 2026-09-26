@@ -6,8 +6,5 @@
   "author": {
     "name": "XingyuVideo"
   },
-  "license": "UNLICENSED",
-  "dependencies": {
-    "electron-updater": "^6.6.2"
-  }
+  "license": "UNLICENSED"
 }
