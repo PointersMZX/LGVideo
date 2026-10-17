@@ -167,7 +167,7 @@ body {
     background: transparent;
     border: none;
     border-left: 3px solid transparent;
-    color: rgba(240, 236, 255, 0.45);
+    color: var(--nav-color, rgba(240, 236, 255, 0.45));
     border-radius: 10px;
     cursor: pointer;
     font-size: 13.5px;
@@ -188,8 +188,8 @@ body {
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.035);
-    color: rgba(240, 236, 255, 0.85);
+    background: var(--nav-hover-bg, rgba(255, 255, 255, 0.035));
+    color: var(--nav-color-hover, rgba(240, 236, 255, 0.85));
 }
 
 .nav-item.active {

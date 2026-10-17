@@ -22,6 +22,7 @@
     '--highlight-color', '--gold-color', '--text-color', '--text-secondary-color',
     '--liquid-glass', '--color-glass-edge', '--color-glass-base', '--color-glass-tint',
     '--color-content-background', '--stage-background',
+    '--nav-color', '--nav-color-hover', '--nav-hover-bg',
   ];
 
   const STAGE_PURPLE = 'radial-gradient(1100px 700px at 18% -10%, rgba(124, 32, 194, 0.4), transparent 62%), radial-gradient(900px 600px at 88% 110%, rgba(212, 176, 111, 0.16), transparent 55%), radial-gradient(700px 500px at 55% 50%, rgba(63, 15, 90, 0.35), transparent 70%)';
@@ -46,6 +47,9 @@
         '--color-glass-tint': 'rgba(124, 32, 194, 0.38)',
         '--color-content-background': 'rgba(13, 7, 22, 0.86)',
         '--stage-background': STAGE_PURPLE,
+        '--nav-color': 'rgba(240, 236, 255, 0.45)',
+        '--nav-color-hover': 'rgba(240, 236, 255, 0.85)',
+        '--nav-hover-bg': 'rgba(255, 255, 255, 0.035)',
       },
     },
     {
@@ -67,6 +71,9 @@
         '--color-glass-base': '#ffffff',
         '--color-content-background': '#f5f5f7',
         '--stage-background': 'none',
+        '--nav-color': 'rgba(33, 33, 33, 0.55)',
+        '--nav-color-hover': 'rgba(33, 33, 33, 0.95)',
+        '--nav-hover-bg': 'rgba(0, 0, 0, 0.05)',
       },
     },
     {
@@ -88,6 +95,9 @@
         '--color-glass-base': '#121216',
         '--color-content-background': '#0c0c10',
         '--stage-background': 'none',
+        '--nav-color': 'rgba(235, 235, 240, 0.45)',
+        '--nav-color-hover': 'rgba(235, 235, 240, 0.9)',
+        '--nav-hover-bg': 'rgba(255, 255, 255, 0.06)',
       },
     },
   ];
@@ -102,6 +112,9 @@
     const mainBg = hexToSolid(p.mainBg || '#170d24');
     const dark = t.dark !== false;
     const glass = !!t.glass;
+    const navColor = dark ? 'rgba(240, 236, 255, 0.45)' : 'rgba(33, 33, 33, 0.55)';
+    const navColorHover = dark ? 'rgba(240, 236, 255, 0.85)' : 'rgba(33, 33, 33, 0.95)';
+    const navHoverBg = dark ? 'rgba(255, 255, 255, 0.035)' : 'rgba(0, 0, 0, 0.05)';
     const stage = dark
       ? `radial-gradient(1100px 700px at 18% -10%, ${hexToRgba(primary, 0.38)}, transparent 62%), radial-gradient(900px 600px at 88% 110%, ${hexToRgba(primary, 0.14)}, transparent 55%)`
       : 'none';
@@ -120,6 +133,9 @@
       '--color-glass-base': glass ? hexToRgba(appBg, 0.42) : mainBg,
       '--color-content-background': glass ? hexToRgba(appBg, 0.86) : appBg,
       '--stage-background': stage,
+      '--nav-color': navColor,
+      '--nav-color-hover': navColorHover,
+      '--nav-hover-bg': navHoverBg,
     };
   };
 
