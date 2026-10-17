@@ -1,10 +1,10 @@
 {
-  "name": "xingyu-video",
-  "version": "1.0.0",
-  "description": "XingyuVideo - The key to unlock all streams.",
+  "name": "lg-video",
+  "version": "1.1.0",
+  "description": "LG Video - The key to unlock all streams.",
   "main": "main.js",
   "author": {
-    "name": "XingyuVideo"
+    "name": "LG Video"
   },
   "license": "UNLICENSED"
 }

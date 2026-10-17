@@ -1,4 +1,4 @@
-// player.js — XingyuVideo 精雕播放器引擎（窗口内叠层 / 独立新窗口共用）
+// player.js — LG Video 精雕播放器引擎（窗口内叠层 / 独立新窗口共用）
 // 控制条：进度（缓冲段+悬停预览+拖拽）/ 音量 / 倍速 / A-B 循环 / 上下集 / 全屏 /
 // 快捷键（空格 K、←→、J L、↑↓、M、F、0-9）/ 3s 自动隐藏 / 进度记忆 / 自动续播 / 出错态
 ;(function initPlayer() {
@@ -131,7 +131,7 @@
     open = true;
     layer.classList.remove('hidden');
 
-    el.title.textContent = ctx.title || 'XingyuVideo';
+    el.title.textContent = ctx.title || 'LG Video';
     el.error.classList.add('hidden');
     video.removeAttribute('src');
     video.load();

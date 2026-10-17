@@ -1,4 +1,4 @@
-// XingyuVideo · LiquidGlass 着色器（自 XingyuMusic 整拷，GLSL 零改动）
+// LG Video · LiquidGlass 着色器（自 XingyuMusic 整拷，GLSL 零改动）
 // 移植自 Metric v1.4.3 液态玻璃（Compose RuntimeShaderEffect，从 classes.dex 抽取）：
 // - s5/s6：SDF 圆角矩形折射（circleMap 位移场 + 梯度方向）+ 7 色色散（红橙黄绿青蓝紫 7 tap）
 // - s3：SDF 边缘光（梯度 · 光向量的幂次锐化，随时间缓慢摆动的"液态流光"）

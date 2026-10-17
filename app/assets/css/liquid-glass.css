@@ -1,4 +1,4 @@
-/* ===== XingyuVideo · 液态玻璃（CSS 兜底层，自 XingyuMusic liquid-glass.less 整拷） =====
+/* ===== LG Video · 液态玻璃（CSS 兜底层，自 XingyuMusic liquid-glass.less 整拷） =====
    WebGL 叠层（liquid-glass.js）不可用时的纯 CSS 玻璃；
    WebGL 启用时 documentElement 加 .liquid-glass-on，撤掉 CSS 玻璃底板，
    玻璃体改由 GPU 着色器绘制（SDF 折射 + 7 色色散 + 边缘流光 + 指针高光）。

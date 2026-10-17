@@ -1,4 +1,4 @@
-// preload-ui.js — XingyuVideo 主窗 preload
+// preload-ui.js — LG Video 主窗 preload
 
 const { contextBridge, ipcRenderer } = require('electron');
 

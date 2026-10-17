@@ -1,4 +1,4 @@
-// themes.js — XingyuVideo 主题系统（照 XingyuMusic setTheme 机制：:root 整包 CSS 变量即时注入）
+// themes.js — LG Video 主题系统（照 XingyuMusic setTheme 机制：:root 整包 CSS 变量即时注入）
 // 3 内置主题（xingyu 紫金黑默认 / white 纯白 / black 纯黑）+ 自定义取色主题（上限 10）
 // 持久化：settings.json 的 themeId / customThemes（主进程原子写）
 ;(function initThemes() {

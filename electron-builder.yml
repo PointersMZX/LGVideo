@@ -1,7 +1,7 @@
-# XingyuVideo — electron-builder 配置（只产出完整安装目录，NSIS 由维护者自行制作）
-appId: com.xingyu.video
-productName: XingyuVideo
-copyright: Copyright © 2026 XingyuVideo
+# LG Video — electron-builder 配置（只产出完整安装目录，NSIS 由维护者自行制作）
+appId: com.lg.video
+productName: LGVideo
+copyright: Copyright © 2026 LG Video
 
 directories:
   output: release

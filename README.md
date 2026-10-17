@@ -1,6 +1,6 @@
-# XingyuVideo
+# LG Video（甘露影视）
 
-星雨影视（XingyuVideo）——影视解析 / 第三方导航 / 本地视频 桌面端。
+甘露影视（LG Video）——影视解析 / 第三方导航 / 本地视频 桌面端。
 
 ## 页面（左侧固定导航，Ctrl+1..4 切换）
 
@@ -21,7 +21,7 @@
 
 ## 更新（双渠道 + 首启选择）
 
-- 渠道：全球官方（GitHub `PointersMZX/XingyuVideo`）/ 国内镜像（Gitee `PointersMZX/XingyuVideo`），设置卡片可切；**首次启动强制弹窗选择**（`updateChannel` 空 = 未选）。
+- 渠道：全球官方（GitHub `PointersMZX/LGVideo`）/ 国内镜像（Gitee `PointersMZX/LGVideo`），设置卡片可切；**首次启动强制弹窗选择**（`updateChannel` 空 = 未选）。
 - 检查/下载均为手动 API（`releases/latest` + 流式下载 + 大小校验），安装 = 唤起 NSIS 安装器后退出（照 Pointers-BOX；Win7 构建自动挑 win7 命名资产）。
 - **发布流程**：两个 Release 页各上传 NSIS 安装器（命名带 `win7` 字样区分即可），无 latest.yml 需求。
 

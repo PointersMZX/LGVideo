@@ -49,7 +49,7 @@ function buildVersion(electronVersion, outName) {
     const outPath = join(tmpBase, outName)
     rmDir(outPath)
     if (!run('npx', ['electron-builder', '--dir', '--x64', `-c.directories.output=${outPath}`])) return false
-    const exe = join(outPath, 'win-unpacked', 'XingyuVideo.exe')
+    const exe = join(outPath, 'win-unpacked', 'LGVideo.exe')
     if (!existsSync(exe)) {
       console.error(`未找到 ${exe}`)
       return false
@@ -107,8 +107,8 @@ for (const outName of ['win-64', 'win7-64']) {
   }
 }
 
-const e33 = statSync(join(releaseDir, 'win-64', 'XingyuVideo.exe'))
-const e22 = statSync(join(releaseDir, 'win7-64', 'XingyuVideo.exe'))
+const e33 = statSync(join(releaseDir, 'win-64', 'LGVideo.exe'))
+const e22 = statSync(join(releaseDir, 'win7-64', 'LGVideo.exe'))
 console.log(`\nwin-64（Electron ${E_MODERN}）: ${e33.size} bytes → release/win-64/`)
 console.log(`win7-64（Electron ${E_WIN7}）: ${e22.size} bytes → release/win7-64/`)
 console.log('全部完成')

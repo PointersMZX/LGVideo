@@ -1,4 +1,4 @@
-// XingyuVideo · LiquidGlass（液态玻璃 WebGL 叠层）
+// LG Video · LiquidGlass（液态玻璃 WebGL 叠层）
 // 自 XingyuMusic-desktop LiquidGlass/index.vue（Vue3 + WebGL1，零外部依赖）移植为 vanilla JS：
 // - 逻辑与 Vue 版 1:1（主题变量轮询 / 背景栅格化 / 指针追踪 / SDF 折射渲染循环 / CSS 兜底切换）
 // - 兜底：WebGL 不可用或着色器编译失败时 canvas 保持隐藏，liquid-glass.css 的纯 CSS 玻璃生效
@@ -214,7 +214,7 @@ const GLASS_CONFIG = {
     ctx.fillRect(0, 0, W, H)
   }
 
-  // ---------- 背景栅格化（XingyuVideo DOM 映射） ----------
+  // ---------- 背景栅格化（LG Video DOM 映射） ----------
   // 自下而上：body（内容底色 + 舞台光多层 background-image）→ .container（内容背景，半透压一层）
   let bgCanvas = null
   let blurCanvas = null

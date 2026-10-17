@@ -1,4 +1,4 @@
-// renderer.js — XingyuVideo 应用编排
+// renderer.js — LG Video 应用编排
 // 页面切换（左导航 / Ctrl+1..4 / 托盘跳转）+ 窗口控制 + 各模块初始化
 window.XVApp = {
   switchPage: null,

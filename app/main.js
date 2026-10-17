@@ -1,4 +1,4 @@
-// main.js — XingyuVideo
+// main.js — LG Video
 // 单主窗（frameless）+ <webview> 多标签浏览器 + 本地播放器窗口 + 托盘
 // 基底 = AudioVisual 1.0.9 主进程（Widevine/UA/更新链路保留），UI 与功能第二轮重构
 
@@ -284,7 +284,7 @@ function openPlayerWindow(payload) {
     minWidth: 640,
     minHeight: 360,
     backgroundColor: '#0d0716',
-    title: payload && payload.title ? payload.title : 'XingyuVideo',
+    title: payload && payload.title ? payload.title : 'LG Video',
     icon: path.join(__dirname, 'assets', 'images', 'icon.png'),
     webPreferences: {
       contextIsolation: true,
@@ -362,7 +362,7 @@ function createWindow() {
       webviewTag: true,
       preload: path.join(__dirname, 'assets', 'js', 'preload-ui.js')
     },
-    title: "XingyuVideo",
+    title: "LG Video",
     icon: path.join(__dirname, 'assets', 'images', 'icon.png'),
     show: false
   };
@@ -504,7 +504,7 @@ function createTray() {
     return;
   }
   tray = new Tray(icon);
-  tray.setToolTip('XingyuVideo');
+  tray.setToolTip('LG Video');
   const pageNav = (page) => {
     showMainWindow();
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('page-navigate', page);
@@ -561,15 +561,15 @@ const { net } = require('electron');
 const UPDATE_CHANNELS = {
   github: {
     label: '全球官方（GitHub）',
-    api: 'https://api.github.com/repos/PointersMZX/XingyuVideo/releases/latest',
-    page: 'https://github.com/PointersMZX/XingyuVideo/releases',
-    headers: { 'User-Agent': 'XingyuVideo-Updater', 'Accept': 'application/vnd.github+json' },
+    api: 'https://api.github.com/repos/PointersMZX/LGVideo/releases/latest',
+    page: 'https://github.com/PointersMZX/LGVideo/releases',
+    headers: { 'User-Agent': 'LGVideo-Updater', 'Accept': 'application/vnd.github+json' },
   },
   gitee: {
     label: '国内镜像（Gitee）',
-    api: 'https://gitee.com/api/v5/repos/PointersMZX/XingyuVideo/releases/latest',
-    page: 'https://gitee.com/PointersMZX/XingyuVideo/releases',
-    headers: { 'User-Agent': 'XingyuVideo-Updater' },
+    api: 'https://gitee.com/api/v5/repos/PointersMZX/LGVideo/releases/latest',
+    page: 'https://gitee.com/PointersMZX/LGVideo/releases',
+    headers: { 'User-Agent': 'LGVideo-Updater' },
   },
 };
 
@@ -624,7 +624,7 @@ function downloadFile(url, destPath, onProgress) {
     let total = 0, received = 0, lastEmit = 0;
     const timer = setTimeout(() => { if (!settled) { settled = true; try { req.abort(); } catch (e) {} reject(new Error('下载超时')); } }, 10 * 60 * 1000);
     const req = net.request(url);
-    req.setHeader('User-Agent', 'XingyuVideo-Updater');
+    req.setHeader('User-Agent', 'LGVideo-Updater');
     const ws = fs.createWriteStream(destPath);
     req.on('response', (res) => {
       if (res.statusCode !== 200) {
@@ -688,7 +688,7 @@ async function downloadUpdate() {
   const asset = lastRelease.asset;
   const dir = path.join(app.getPath('userData'), 'updates');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const dest = path.join(dir, `XingyuVideo-Setup-${lastRelease.latest}.exe`);
+  const dest = path.join(dir, `LGVideo-Setup-${lastRelease.latest}.exe`);
   fs.rmSync(dest, { force: true });
   await downloadFile(asset.browser_download_url, dest, (pct, rec, tot) => {
     broadcastUpdate({ type: 'progress', percent: pct, transferred: rec, total: tot });
