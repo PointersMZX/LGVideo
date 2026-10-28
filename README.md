@@ -1,73 +1,49 @@
-# LG Video（甘露影视）
+# 甘露影视（LG Video）
 
-甘露影视（LG Video）——影视解析 / 第三方导航 / 本地视频 桌面端。
+甘露影视（LG Video）是一款 Windows 桌面影视应用：内置解析与多标签浏览器、本地影视库、精雕播放器，主题与更新开箱即用。
 
-## 页面（左侧固定导航，Ctrl+1..4 切换）
+## 功能
 
-| 页面 | 内容 |
+- **解析&浏览器**：顶行解析选项（平台 + 接口快速解析）；第三方导航站点（默认空白，可自行添加）；多标签浏览，支持拖拽排序、单独关闭、标签休眠时长可配；工具栏前进/后退/刷新/重置会话 + 地址框 + 加载进度指示。
+- **本地影视**：添加多个视频目录，自动递归扫描成列表，点开即播；可播放格式自动实测，不支持的格式置灰。
+- **我的影视**：自建影视条目（名称/简介/封面/自定义集数），每集可指向网络链接或本地文件，分集点播；网络集自动在浏览器中打开。
+- **精雕播放器**：页面叠层（默认）与独立窗口两种形态；进度条（缓冲段显示、悬停预览、拖拽定位）、音量/静音、倍速、A-B 循环、上一/下一集、全屏；快捷键（空格/K 播放暂停、←→ 5 秒、J/L 10 秒、↑↓ 音量、M 静音、0-9 定位、Esc 退出叠层）；控制条 3 秒自动隐藏；按视频记忆进度、重开续播，自动续播可关；玻璃质感视觉随主题自适应。
+- **主题**：内置紫金黑（默认，液态玻璃开）/纯白/纯黑；自定义主题可取色（主色/字体/背景，最多 10 套）。
+- **快捷切页**：左侧导航 + 快捷键 Ctrl+1~4。
+
+## 下载与安装
+
+在 Releases 页面下载对应系统的安装包：
+
+- GitHub（全球官方）：https://github.com/PointersMZX/LGVideo/releases
+- Gitee（国内镜像）：https://gitee.com/PointersMZX/LGVideo/releases
+
+| 版本 | 系统要求 |
 |---|---|
-| 解析&浏览器 | 顶行解析选项（普通解析：平台+接口+解析；第三方导航：导航站点，默认空）→ 多标签 webview（拖拽排序/关闭/休眠 0/2/5/15min 可配）→ 工具栏（后退/前进/刷新/重置会话+地址框+进度发丝线） |
-| 本地 | 添加/移除视频目录（多目录），主进程递归扫描，文件列表点播；格式自动实测（`<video>.canPlayType`），不支持的灰显 |
-| 我的影视 | 创建影视条目（名称/介绍/封面/自定义集数，每集选 URL 或本地文件），集数列表点播；URL 集回浏览器标签打开 |
-| 设置 | 卡片流：关于 / 主题（3 内置+自定义取色×10）/ 解析接口管理 / 影视导航管理（默认空）/ 浏览器设置 / 播放器设置 / 更新检查（双渠道） |
+| 常规版 | Win10 / Win11（64 位） |
+| Win7 兼容版 | Win7（64 位） |
 
-## 播放器（精雕）
+也有便携版压缩包（7z）：解压后直接运行即可，无需安装；设置、影视库与播放进度自动保存在程序目录旁的 userData 文件夹里，整个目录搬走即可带走全部数据。
 
-窗口内全屏叠层（默认，可切独立新窗口）：进度（缓冲段+悬停预览+拖拽）、音量/静音、倍速、A-B 循环、上一/下一集、全屏（F/双击）、快捷键（空格/K、←→5s、J/L 10s、↑↓音量、M、0-9 定位、Esc 退出）、3s 自动隐藏、**进度记忆**（按文件存 `positions.json`，重开续播）、自动续播（可关）、出错态。控制条挂液态玻璃（player 参数）。
+## 更新
 
-## 主题
+应用内置更新检查（设置 → 更新检查），发现新版本可一键下载安装：
 
-3 内置：xingyu 紫金黑（默认，液态玻璃开）/ 纯白 / 纯黑（玻璃关）；自定义：主色/字体色/应用背景/面板背景 取色 + 深色/玻璃开关，上限 10。机制 = XingyuMusic 的 `:root` 整包 CSS 变量即时注入；持久化 `settings.json`。
+- **全球官方渠道**：GitHub（境外访问更稳）
+- **国内镜像渠道**：Gitee（国内访问更稳）
 
-## 更新（双渠道 + 首启选择）
+首次启动会弹窗选择更新渠道，之后可在设置中随时切换；Win7 兼容版会自动匹配对应资源。
 
-- 渠道：全球官方（GitHub `PointersMZX/LGVideo`）/ 国内镜像（Gitee `PointersMZX/LGVideo`），设置卡片可切；**首次启动强制弹窗选择**（`updateChannel` 空 = 未选）。
-- 检查/下载均为手动 API（`releases/latest` + 流式下载 + 大小校验），安装 = 唤起 NSIS 安装器后退出（照 Pointers-BOX；Win7 构建自动挑 win7 命名资产）。
-- **发布流程**：两个 Release 页各上传 NSIS 安装器（命名带 `win7` 字样区分即可），无 latest.yml 需求。
+## 使用提示
 
-## 托盘（照 Pointers-BOX）
+- 关闭主窗口不会退出应用，只是缩进托盘（防止误关）；托盘菜单可直接跳转各页面。
+- 解析与导航功能依赖网络，若某站点打不开，可重置会话后刷新再试。
 
-托盘菜单（显示窗口 / 4 页跳转 / 退出）、双击显示、**关窗 = 隐藏到托盘（防误关）**、单实例锁（第二实例聚焦现窗）。图标 = `build/tray.png`（extraResources → `resources/icons/tray.png`）。
+## 社区与反馈
 
-## 构建（两个完整安装目录，NSIS 由维护者自行制作）
+- GitHub Issues：https://github.com/PointersMZX/LGVideo/issues
+- Gitee Issues：https://gitee.com/PointersMZX/LGVideo/issues
 
-```
-npm install          # electron 33.4.11 + electron-builder（npmmirror）
-npm run build:win    # = node scripts/build-win.mjs
-```
+## 版权
 
-产物与体积（2026-09-26 实测，locale 已精简 zh-CN/zh-TW/en-US）：
-
-| 目录 | Electron | 解包 | 7z -mx=9 压缩（≈NSIS single-7z 上界） |
-|---|---|---|---|
-| `release/win-64` | 33.4.11（Chromium 130） | 256M | **71 MB** |
-| `release/win7-64` | 22.3.27（Chromium 108） | 222M | **≈65 MB** |
-
-两个预算都 < 100MB ✓。NSIS 侧建议：`SetCompress /solid on /lzma` 可再压一档；勿删 `vk_swiftshader.dll`（液态玻璃软渲染兜底依赖）。
-
-## 兼容性备注（Win7 版 = Electron 22 / Chromium 108）
-
-- 新增 UI 全用具体色值，无 `color-mix`/`startViewTransition` 依赖。
-- `<webview>`、Tray、`net.request` 更新下载在 e22 均可用。
-- 格式实测：本机 e33 下 mp4/m4v/webm/mov/mkv/avi/flv/ts/m2ts/3gp/mpg/mpeg 全部通过 `canPlayType`（Electron ffmpeg 自带 matroska/avi/flv demuxer）；e22 实测结果以 `console.log [XVLocal] 可播放格式实测` 为准。
-
-## 目录
-
-```
-app/                  # 打包源（main.js / index.html / player-window.html / assets/）
-  assets/js/          # browser.js（多标签 webview）local.js library.js player.js
-                      # settings.js themes.js renderer.js liquid-glass.js（vanilla）
-                      # preload-ui.js preload-player.js preload-web.js（站点注入）
-  assets/css/         # style.css（新壳+紫金黑）player.css liquid-glass.css drama-style.css
-build/                # icon.ico + tray.png
-scripts/build-win.mjs # 双版本构建
-docs/glass-reference/ # Metric v1.4.3 GLSL 原文 6 段（重写参考）
-example/              # 原始安装包（本地参考，不入 git）
-release/              # 构建输出（不入 git）
-```
-
-## 验证记录（2026-09-26）
-
-- dev（e33）：`[LiquidGlass] WebGL 叠层已启用（.titlebar / #player-controls）`、`[XVLocal] 可播放格式实测` 全绿，30s 运行无 JS 报错。
-- asar 品牌残留 grep -a 零命中；`userData/` 已排除出包。
-- 真机 GPU 实拍（液态玻璃观感、播放器效果）= 维护者确认项。
+© 2026 LG Video（PointersMZX）
