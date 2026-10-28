@@ -16,6 +16,15 @@
     return '#' + h;
   };
 
+  // hex → "r, g, b" 三元组（供 rgba(var(--glass-tint-rgb), a) 复用）
+  const hexToRgbTriplet = (hex) => {
+    let h = String(hex || '').trim().replace('#', '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    const n = parseInt(h, 16);
+    if (isNaN(n)) return '13, 7, 22';
+    return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+  };
+
   // 主题键（与 style.css :root 对齐）
   const VAR_KEYS = [
     '--primary-bg', '--secondary-bg', '--sidebar-bg', '--accent-color',
@@ -23,6 +32,11 @@
     '--liquid-glass', '--color-glass-edge', '--color-glass-base', '--color-glass-tint',
     '--color-content-background', '--stage-background',
     '--nav-color', '--nav-color-hover', '--nav-hover-bg',
+    // 液态玻璃材质参数（六层模型的 Web 落点，缺项回落 style.css :root 默认值）
+    '--glass-blur', '--glass-alpha', '--glass-tint-rgb', '--glass-border-c',
+    '--glass-rim', '--glass-rim-b', '--glass-shadow-c', '--glass-sheen-a', '--glass-glow-c',
+    // 流动背景（液态层）
+    '--flow-speed', '--bg-blob-1', '--bg-blob-2', '--bg-blob-3', '--bg-flow-conic',
   ];
 
   const STAGE_PURPLE = 'radial-gradient(1100px 700px at 18% -10%, rgba(124, 32, 194, 0.4), transparent 62%), radial-gradient(900px 600px at 88% 110%, rgba(212, 176, 111, 0.16), transparent 55%), radial-gradient(700px 500px at 55% 50%, rgba(63, 15, 90, 0.35), transparent 70%)';
@@ -45,11 +59,27 @@
         '--color-glass-edge': 'rgba(232, 208, 158, 0.75)',
         '--color-glass-base': 'rgba(13, 7, 22, 0.42)',
         '--color-glass-tint': 'rgba(124, 32, 194, 0.38)',
-        '--color-content-background': 'rgba(13, 7, 22, 0.86)',
+        '--color-content-background': 'rgba(13, 7, 22, 0.78)',
         '--stage-background': STAGE_PURPLE,
         '--nav-color': 'rgba(240, 236, 255, 0.45)',
         '--nav-color-hover': 'rgba(240, 236, 255, 0.85)',
         '--nav-hover-bg': 'rgba(255, 255, 255, 0.035)',
+        // 玻璃材质（06 规范 dark/flowPanel 预设标定）
+        '--glass-blur': '18px',
+        '--glass-alpha': '0.42',
+        '--glass-tint-rgb': '13, 7, 22',
+        '--glass-border-c': 'rgba(255, 255, 255, 0.16)',
+        '--glass-rim': 'rgba(255, 255, 255, 0.34)',
+        '--glass-rim-b': 'rgba(255, 255, 255, 0.10)',
+        '--glass-shadow-c': 'rgba(3, 0, 20, 0.35)',
+        '--glass-sheen-a': '0.10',
+        '--glass-glow-c': 'rgba(255, 255, 255, 0.14)',
+        // 流动背景（紫金青三球 + 低透锥形整层旋转）
+        '--flow-speed': '1',
+        '--bg-blob-1': 'rgba(124, 32, 194, 0.5)',
+        '--bg-blob-2': 'rgba(212, 176, 111, 0.28)',
+        '--bg-blob-3': 'rgba(88, 28, 150, 0.45)',
+        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(124, 32, 194, 0.14), rgba(88, 28, 150, 0.10), rgba(212, 176, 111, 0.07), rgba(124, 32, 194, 0.14))',
       },
     },
     {
@@ -74,6 +104,22 @@
         '--nav-color': 'rgba(33, 33, 33, 0.55)',
         '--nav-color-hover': 'rgba(33, 33, 33, 0.95)',
         '--nav-hover-bg': 'rgba(0, 0, 0, 0.05)',
+        // 玻璃材质（浅色 frosted：白 tint 提实、暗边框、白棱线，投影与光斑用主题紫）
+        '--glass-blur': '16px',
+        '--glass-alpha': '0.50',
+        '--glass-tint-rgb': '255, 255, 255',
+        '--glass-border-c': 'rgba(20, 10, 40, 0.10)',
+        '--glass-rim': 'rgba(255, 255, 255, 0.90)',
+        '--glass-rim-b': 'rgba(20, 10, 40, 0.06)',
+        '--glass-shadow-c': 'rgba(31, 26, 51, 0.12)',
+        '--glass-sheen-a': '0.09',
+        '--glass-glow-c': 'rgba(124, 32, 194, 0.08)',
+        // 流动背景（浅底低饱和，紫金各一球）
+        '--flow-speed': '1',
+        '--bg-blob-1': 'rgba(124, 32, 194, 0.10)',
+        '--bg-blob-2': 'rgba(212, 176, 111, 0.10)',
+        '--bg-blob-3': 'rgba(88, 28, 150, 0.07)',
+        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(124, 32, 194, 0.05), rgba(212, 176, 111, 0.04), rgba(124, 32, 194, 0.05))',
       },
     },
     {
@@ -98,6 +144,22 @@
         '--nav-color': 'rgba(235, 235, 240, 0.45)',
         '--nav-color-hover': 'rgba(235, 235, 240, 0.9)',
         '--nav-hover-bg': 'rgba(255, 255, 255, 0.06)',
+        // 玻璃材质（06 规范 dark 预设：blur 24、深 tint、极克制光效）
+        '--glass-blur': '24px',
+        '--glass-alpha': '0.42',
+        '--glass-tint-rgb': '12, 12, 16',
+        '--glass-border-c': 'rgba(255, 255, 255, 0.13)',
+        '--glass-rim': 'rgba(255, 255, 255, 0.28)',
+        '--glass-rim-b': 'rgba(255, 255, 255, 0.08)',
+        '--glass-shadow-c': 'rgba(0, 0, 0, 0.45)',
+        '--glass-sheen-a': '0.08',
+        '--glass-glow-c': 'rgba(150, 90, 220, 0.10)',
+        // 流动背景（纯黑上极淡，避免喧宾夺主）
+        '--flow-speed': '1',
+        '--bg-blob-1': 'rgba(150, 90, 220, 0.14)',
+        '--bg-blob-2': 'rgba(212, 176, 111, 0.05)',
+        '--bg-blob-3': 'rgba(63, 15, 90, 0.18)',
+        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(150, 90, 220, 0.06), rgba(63, 15, 90, 0.05), rgba(150, 90, 220, 0.06))',
       },
     },
   ];
@@ -118,7 +180,43 @@
     const stage = dark
       ? `radial-gradient(1100px 700px at 18% -10%, ${hexToRgba(primary, 0.38)}, transparent 62%), radial-gradient(900px 600px at 88% 110%, ${hexToRgba(primary, 0.14)}, transparent 55%)`
       : 'none';
+    // 玻璃材质与流动背景按深浅两套标定（深色=dark 预设 / 浅色=frosted 白玻璃）
+    const tintRgb = dark
+      ? (p.appBg ? hexToRgbTriplet(appBg) : '13, 7, 22')
+      : '255, 255, 255';
+    const glassVars = dark ? {
+      '--glass-blur': '18px',
+      '--glass-alpha': '0.42',
+      '--glass-tint-rgb': tintRgb,
+      '--glass-border-c': `rgba(255, 255, 255, 0.16)`,
+      '--glass-rim': `rgba(255, 255, 255, 0.34)`,
+      '--glass-rim-b': `rgba(255, 255, 255, 0.10)`,
+      '--glass-shadow-c': 'rgba(3, 0, 20, 0.35)',
+      '--glass-sheen-a': '0.10',
+      '--glass-glow-c': `rgba(255, 255, 255, 0.14)`,
+      '--flow-speed': '1',
+      '--bg-blob-1': hexToRgba(primary, 0.5),
+      '--bg-blob-2': hexToRgba(primary, 0.22),
+      '--bg-blob-3': hexToRgba(primary, 0.38),
+      '--bg-flow-conic': `conic-gradient(from 0deg at 50% 50%, ${hexToRgba(primary, 0.12)}, ${hexToRgba(primary, 0.06)}, ${hexToRgba(primary, 0.12)})`,
+    } : {
+      '--glass-blur': '16px',
+      '--glass-alpha': '0.50',
+      '--glass-tint-rgb': tintRgb,
+      '--glass-border-c': 'rgba(20, 10, 40, 0.10)',
+      '--glass-rim': 'rgba(255, 255, 255, 0.90)',
+      '--glass-rim-b': 'rgba(20, 10, 40, 0.06)',
+      '--glass-shadow-c': 'rgba(31, 26, 51, 0.12)',
+      '--glass-sheen-a': '0.09',
+      '--glass-glow-c': hexToRgba(primary, 0.08),
+      '--flow-speed': '1',
+      '--bg-blob-1': hexToRgba(primary, 0.10),
+      '--bg-blob-2': hexToRgba(primary, 0.06),
+      '--bg-blob-3': hexToRgba(primary, 0.04),
+      '--bg-flow-conic': `conic-gradient(from 0deg at 50% 50%, ${hexToRgba(primary, 0.04)}, ${hexToRgba(primary, 0.02)}, ${hexToRgba(primary, 0.04)})`,
+    };
     return {
+      ...glassVars,
       '--primary-bg': appBg,
       '--secondary-bg': mainBg,
       '--sidebar-bg': mainBg,
@@ -131,7 +229,7 @@
       '--color-glass-edge': glass ? hexToRgba(primary, 0.75) : 'transparent',
       '--color-glass-tint': glass ? hexToRgba(primary, 0.38) : 'transparent',
       '--color-glass-base': glass ? hexToRgba(appBg, 0.42) : mainBg,
-      '--color-content-background': glass ? hexToRgba(appBg, 0.86) : appBg,
+      '--color-content-background': glass ? hexToRgba(appBg, 0.78) : appBg,
       '--stage-background': stage,
       '--nav-color': navColor,
       '--nav-color-hover': navColorHover,

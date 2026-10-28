@@ -1,62 +1,85 @@
-/* ===== LG Video · 液态玻璃（CSS 兜底层，自 XingyuMusic liquid-glass.less 整拷） =====
+/* ===== LG Video · 液态玻璃（CSS 兜底层 v1.2.0） =====
    WebGL 叠层（liquid-glass.js）不可用时的纯 CSS 玻璃；
    WebGL 启用时 documentElement 加 .liquid-glass-on，撤掉 CSS 玻璃底板，
    玻璃体改由 GPU 着色器绘制（SDF 折射 + 7 色色散 + 边缘流光 + 指针高光）。
-   要点：顶栏底板必须半透，磨砂（backdrop blur）折射才看得见；
-   侧边导航不做磨砂——导航要清晰，只用纯色面板 + 金色边缘光。 */
+   材质五叠加件（对齐 06 号《液态玻璃参数规范》）：
+     ① 玻璃底 半透渐变 + backdrop 模糊/提饱和/提亮
+     ② 棱线 inset 上亮下暗 + 金色发丝边
+     ③ 指针光斑/光泽带等微交互在 style.css 的 .glass-card 体系
+   要点：玻璃底板必须半透，磨砂（backdrop blur）折射才看得见；
+   侧边导航不做磨砂——导航要清晰，只用纯色面板 + 金色边缘发丝线。 */
 
-/* 顶栏：玻璃面板 */
+/* 顶栏：玻璃面板（拖拽区 + 窗口按钮） */
 .titlebar {
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%),
-    var(--color-glass-base, var(--primary-bg));
-  border-bottom: 1px solid var(--color-glass-edge, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 4px 18px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%),
+        var(--color-glass-base, var(--primary-bg));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 4px 18px rgba(0, 0, 0, 0.18);
+    border-bottom: 1px solid var(--color-glass-edge, transparent);
 }
 
-/* 侧边导航：清晰面板（不磨砂）+ 金色右缘发丝线 */
+/* 侧边导航：清晰面板（不磨砂）+ 右缘金色发丝线（两端渐隐） */
 .sidebar {
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
-    var(--sidebar-bg, rgba(13, 7, 22, 0.6));
-  border-right: 1px solid var(--color-glass-edge, transparent);
+    position: relative;
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
+        var(--sidebar-bg, rgba(13, 7, 22, 0.6));
+}
+
+.sidebar::after {
+    content: '';
+    position: absolute;
+    top: 54px;
+    bottom: 12px;
+    right: 0;
+    width: 1px;
+    background: linear-gradient(180deg,
+            transparent 0%,
+            var(--color-glass-edge, transparent) 28%,
+            var(--color-glass-edge, transparent) 72%,
+            transparent 100%);
+    opacity: 0.45;
+    pointer-events: none;
 }
 
 /* 播放器控制条：玻璃面板（隐藏时矩形为 0，WebGL 层自动收手） */
 #player-controls {
-  background:
-    linear-gradient(0deg, rgba(13, 7, 22, 0.78) 0%, rgba(13, 7, 22, 0.28) 70%, transparent 100%),
-    var(--color-glass-base, rgba(13, 7, 22, 0.42));
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    background:
+        linear-gradient(0deg, rgba(var(--glass-tint-rgb, 13, 7, 22), 0.78) 0%, rgba(var(--glass-tint-rgb, 13, 7, 22), 0.28) 70%, transparent 100%),
+        var(--color-glass-base, rgba(13, 7, 22, 0.42));
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 /* 玻璃画布（liquid-glass.js 生成）：固定定位叠层，默认隐藏 */
 .liquid-glass-canvas {
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  display: none;
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    display: none;
 }
 
 /* ===== WebGL 液态玻璃激活态 ===== */
 .liquid-glass-on .titlebar {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  background: transparent;
-  border-bottom: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: transparent;
+    border-bottom: none;
+    box-shadow: none;
 }
 
 .liquid-glass-on .sidebar {
-  background: var(--sidebar-bg, rgba(13, 7, 22, 0.6));
+    background: var(--sidebar-bg, rgba(13, 7, 22, 0.6));
 }
 
 .liquid-glass-on #player-controls {
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
 }

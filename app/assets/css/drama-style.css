@@ -80,3 +80,38 @@ body.drama-mode #youku-custom-page .usage-tips li::before {
 ::-webkit-scrollbar-thumb {
     transition: all 0.3s ease;
 }
+
+/* ═══ v1.2.0 液态玻璃适配（黑绿体系） ═══
+   body.drama-mode 特异性(0-1-1) 高于 themes.js 注入的 :root(0-1-0)，可稳定覆盖。 */
+body.drama-mode {
+    --glass-tint-rgb: 0, 0, 0;
+    --glass-border-c: rgba(192, 250, 160, 0.14);
+    --glass-rim: rgba(192, 250, 160, 0.16);
+    --glass-rim-b: rgba(192, 250, 160, 0.06);
+    --glass-shadow-c: rgba(0, 0, 0, 0.5);
+    --glass-sheen-a: 0.07;
+    --glass-glow-c: rgba(192, 250, 160, 0.1);
+    --color-glass-edge: rgba(192, 250, 160, 0.55);
+    --color-glass-base: rgba(10, 10, 10, 0.5);
+    --color-glass-tint: rgba(80, 160, 90, 0.25);
+    /* 黑绿舞台光（替代紫金遗留，玻璃折射的景深来源） */
+    --stage-background: radial-gradient(1100px 700px at 18% -10%, rgba(60, 140, 70, 0.28), transparent 62%), radial-gradient(900px 600px at 88% 110%, rgba(192, 250, 160, 0.08), transparent 55%), radial-gradient(700px 500px at 55% 50%, rgba(20, 60, 30, 0.3), transparent 70%);
+    --bg-blob-1: rgba(80, 200, 100, 0.14);
+    --bg-blob-2: rgba(192, 250, 160, 0.08);
+    --bg-blob-3: rgba(40, 90, 50, 0.2);
+    --bg-flow-conic: conic-gradient(from 0deg at 50% 50%, rgba(80, 200, 100, 0.08), rgba(40, 90, 50, 0.06), rgba(80, 200, 100, 0.08));
+}
+
+/* 导航网页模式 webview 吃资源：关掉流动层，保留静态绿光（§6.2 性能分档） */
+body.drama-mode .bg-stage .bg-conic,
+body.drama-mode .bg-stage .bg-blob {
+    display: none;
+}
+
+/* 导航活动项：drama 下跟随黑绿体系（原紫色光晕作废） */
+body.drama-mode .nav-item.active {
+    background: linear-gradient(135deg, rgba(192, 250, 160, 0.12), rgba(192, 250, 160, 0.05));
+    box-shadow:
+        inset 0 1px 0 rgba(192, 250, 160, 0.14),
+        0 0 18px rgba(192, 250, 160, 0.12);
+}

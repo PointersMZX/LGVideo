@@ -290,7 +290,7 @@
     for (let i = 0; i < tabs.length; i++) {
       const t = tabs[i];
       const pill = document.createElement('div');
-      pill.className = 'tab-pill' + (t.id === activeId ? ' active' : '');
+      pill.className = 'tab-pill glass-lite' + (t.id === activeId ? ' active' : '');
       pill.draggable = true;
       pill.dataset.idx = String(i);
       const title = document.createElement('span');

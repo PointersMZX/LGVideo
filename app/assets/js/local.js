@@ -58,7 +58,7 @@
     }
     for (const d of dirs) {
       const row = document.createElement('div');
-      row.className = 'local-dir-item';
+      row.className = 'local-dir-item glass-lite';
       const name = document.createElement('span');
       name.className = 'dir-name';
       name.textContent = d;

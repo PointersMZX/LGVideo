@@ -27,7 +27,7 @@
 
   function renderItem(item) {
     const card = document.createElement('div');
-    card.className = 'lib-card' + (item.id === selectedId ? ' active' : '');
+    card.className = 'lib-card glass-lite hoverable' + (item.id === selectedId ? ' active' : '');
     card.dataset.id = item.id;
     const name = document.createElement('div');
     name.className = 'lib-card-name';

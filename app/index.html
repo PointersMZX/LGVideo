@@ -34,6 +34,15 @@
 </head>
 
 <body>
+    <!-- 流动背景层（液态地基：锥形色相旋转 + 三色球对流 + 细噪点；静态舞台光在 body 上兜底） -->
+    <div class="bg-stage" aria-hidden="true">
+        <div class="bg-conic"></div>
+        <div class="bg-blob bg-blob--1"></div>
+        <div class="bg-blob bg-blob--2"></div>
+        <div class="bg-blob bg-blob--3"></div>
+        <div class="bg-grain"></div>
+    </div>
+
     <!-- 顶栏：拖拽区 + 窗口按钮（液态玻璃面板） -->
     <div class="titlebar" id="titlebar">
         <div class="titlebar-drag"></div>
@@ -261,11 +270,11 @@
             <section id="page-settings" class="page">
                 <div class="settings-cards">
                     <!-- 关于 -->
-                    <section class="settings-card" id="card-about">
+                    <section class="settings-card glass-card hoverable" id="card-about">
                         <h2 class="card-title">关于 LG Video</h2>
                         <div class="card-body">
                             <div class="info-row"><span class="info-label">应用版本</span><span
-                                    id="about-version">v1.1.0</span></div>
+                                    id="about-version">v1.2.0</span></div>
                             <div class="about-text small">
                                 本软件完全免费，代码已开源。开源地址：
                                 <a href="https://github.com/PointersMZX/LGVideo" target="_blank"
@@ -287,7 +296,7 @@
                     </section>
 
                     <!-- 主题 -->
-                    <section class="settings-card" id="card-theme">
+                    <section class="settings-card glass-card hoverable" id="card-theme">
                         <h2 class="card-title">主题</h2>
                         <div class="card-body">
                             <div id="theme-tiles" class="theme-tiles"></div>
@@ -309,7 +318,7 @@
                     </section>
 
                     <!-- 解析接口管理 -->
-                    <section class="settings-card" id="card-parsing">
+                    <section class="settings-card glass-card hoverable" id="card-parsing">
                         <h2 class="card-title">解析接口管理</h2>
                         <div class="card-body">
                             <div class="config-editor-wrapper">
@@ -332,7 +341,7 @@
                     </section>
 
                     <!-- 影视导航管理 -->
-                    <section class="settings-card" id="card-nav">
+                    <section class="settings-card glass-card hoverable" id="card-nav">
                         <h2 class="card-title">影视导航管理</h2>
                         <div class="card-body">
                             <div class="config-editor-wrapper">
@@ -355,7 +364,7 @@
                     </section>
 
                     <!-- 浏览器设置 -->
-                    <section class="settings-card" id="card-browser">
+                    <section class="settings-card glass-card hoverable" id="card-browser">
                         <h2 class="card-title">浏览器设置</h2>
                         <div class="card-body">
                             <div class="info-row">
@@ -372,7 +381,7 @@
                     </section>
 
                     <!-- 播放器设置 -->
-                    <section class="settings-card" id="card-player">
+                    <section class="settings-card glass-card hoverable" id="card-player">
                         <h2 class="card-title">播放器设置</h2>
                         <div class="card-body">
                             <div class="info-row">
@@ -388,7 +397,7 @@
                     </section>
 
                     <!-- 更新检查 -->
-                    <section class="settings-card" id="card-update">
+                    <section class="settings-card glass-card hoverable" id="card-update">
                         <h2 class="card-title">更新检查</h2>
                         <div class="card-body">
                             <div id="update-area" class="update-area"></div>
@@ -457,7 +466,7 @@
 
     <!-- 通用确认弹窗 -->
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content glass-card">
             <div class="modal-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -479,7 +488,7 @@
 
     <!-- 许可协议弹窗 -->
     <div id="pact-modal" class="modal-overlay pact-overlay" style="display: none;">
-        <div class="modal-content pact-content">
+        <div class="modal-content glass-card pact-content">
             <h2>许可协议</h2>
             <div class="pact-text">
                 <p>本项目基于 <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License 2.0</a> 许可证发行。以下协议是对于 Apache License 2.0 的补充，如有冲突，以以下协议为准。</p>
@@ -497,7 +506,7 @@
 
     <!-- 更新渠道选择弹窗（首次启动强制选择） -->
     <div id="channel-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content channel-content">
+        <div class="modal-content glass-card channel-content">
             <h2>选择更新渠道</h2>
             <p class="channel-tip">用于检查与应用内更新；之后可随时在「设置 → 更新检查」中更改。</p>
             <div class="channel-options" id="channel-options">
@@ -542,6 +551,7 @@
     <script src="./assets/js/renderer.js"></script>
     <script src="./assets/js/liquid-glass-shaders.js"></script>
     <script src="./assets/js/liquid-glass.js"></script>
+    <script src="./assets/js/liquid-motion.js"></script>
 </body>
 
 </html>
