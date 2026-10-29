@@ -23,4 +23,22 @@ contextBridge.exposeInMainWorld('playerAPI', {
 
   // 截图（canvas dataURL → userData/screenshots PNG）
   saveScreenshot: (dataUrl, name) => ipcRenderer.invoke('screenshot:save', dataUrl, name),
+
+  // 本地媒体代理端口（流媒体 m3u8/直连流经代理注头，与主窗共用同一代理）
+  ganluProxyPort: () => ipcRenderer.invoke('ganlu-proxy-port'),
+
+  // 剧集页解析（流媒体懒解析：剧集页 → 隐藏窗捕获 m3u8/直链）
+  ganluResolve: (payload) => ipcRenderer.invoke('ganlu-resolve', payload),
+  ganluResolveCancel: (tag) => ipcRenderer.send('ganlu-resolve-cancel', tag),
+  onGanluResolveCapture: (callback) => ipcRenderer.on('ganlu-resolve-capture', (event, payload) => callback(payload)),
+  onGanluResolveTimeout: (callback) => ipcRenderer.on('ganlu-resolve-timeout', (event, payload) => callback(payload)),
+
+  // 一起看（syncplay；主进程 TCP/STARTTLS 协议）
+  syncplayConnect: (p) => ipcRenderer.invoke('ganlu-syncplay-connect', p),
+  syncplayState: (p) => ipcRenderer.invoke('ganlu-syncplay-state', p),
+  syncplayChat: (p) => ipcRenderer.invoke('ganlu-syncplay-chat', p),
+  syncplayClose: (p) => ipcRenderer.invoke('ganlu-syncplay-close', p),
+  onSyncplayEvent: (callback) => ipcRenderer.on('ganlu-syncplay-event', (event, payload) => callback(payload)),
+  onSyncplayConnected: (callback) => ipcRenderer.on('ganlu-syncplay-connected', (event, payload) => callback(payload)),
+  onSyncplayConnectFailed: (callback) => ipcRenderer.on('ganlu-syncplay-connect-failed', (event, payload) => callback(payload)),
 });

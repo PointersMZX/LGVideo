@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="assets/css/toastify.min.css">
     <link rel="stylesheet" href="assets/css/liquid-glass.css">
     <link rel="stylesheet" href="assets/css/player.css">
+    <link rel="stylesheet" href="assets/css/ganlu.css">
     <link rel="stylesheet" id="drama-theme" href="assets/css/drama-style.css" disabled>
 </head>
 
@@ -85,6 +86,14 @@
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                     </svg>
                     解析&浏览器
+                </button>
+                <button class="nav-item" data-page="ganlu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="13" rx="2"></rect>
+                        <polyline points="17 2 12 7 7 2"></polyline>
+                    </svg>
+                    甘露影视源
                 </button>
                 <button class="nav-item" data-page="local">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -173,6 +182,13 @@
                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="23 4 23 10 17 10"></polyline>
                             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                    </button>
+                    <button id="btab-ua" class="nav-button" data-tooltip="手机/桌面版切换">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="7" y="2" width="10" height="20" rx="2"></rect>
+                            <line x1="11" y1="19" x2="13" y2="19"></line>
                         </svg>
                     </button>
                     <button id="btab-reset" class="nav-button" data-tooltip="重置会话">
@@ -267,6 +283,141 @@
             </section>
 
             <!-- ④ 设置（照 Pointers-BOX 卡片流） -->
+            <!-- ③½ 甘露影视源（规则引擎 / 公共数据 / 播放 / 下载 / 弹幕 / 一起看 / 投屏，新增全部收拢在此区块） -->
+            <section id="page-ganlu" class="page">
+                <div class="page-head">
+                    <div class="page-title">甘露影视源</div>
+                    <div class="page-actions">
+                        <button id="gl-refresh" class="toolbar-action-btn">刷新</button>
+                    </div>
+                </div>
+                <div class="gl-tabs" id="gl-tabs">
+                    <button class="gl-tab active" data-gl="home">首页</button>
+                    <button class="gl-tab" data-gl="search">搜索</button>
+                    <button class="gl-tab" data-gl="calendar">时间表</button>
+                    <button class="gl-tab" data-gl="collect">追番</button>
+                    <button class="gl-tab" data-gl="history">历史</button>
+                    <button class="gl-tab" data-gl="download">下载</button>
+                    <button class="gl-tab" data-gl="rules">规则</button>
+                    <button class="gl-tab" data-gl="gl-settings">源设置</button>
+                </div>
+
+                <!-- 首页：本周时间表 + 热门 + 最近更新 -->
+                <div id="gl-home" class="gl-view active">
+                    <div class="gl-section-title">本周时间表</div>
+                    <div id="gl-home-calendar" class="gl-card-grid"></div>
+                    <div class="gl-section-title">热门作品</div>
+                    <div id="gl-home-trending" class="gl-card-grid"></div>
+                    <div class="gl-section-title">最近更新</div>
+                    <div id="gl-home-updates" class="gl-card-grid"></div>
+                </div>
+
+                <!-- 搜索：选源 + 关键词 / 识图 -->
+                <div id="gl-search" class="gl-view">
+                    <div class="gl-searchbar">
+                        <select id="gl-source-select" class="field-input"></select>
+                        <input type="text" id="gl-keyword" class="field-input" placeholder="搜索作品 / 片名…">
+                        <button id="gl-search-btn" class="action-button">搜索</button>
+                        <button id="gl-trace-btn" class="secondary-button">📷 识图</button>
+                    </div>
+                    <div id="gl-search-results" class="gl-card-grid"></div>
+                </div>
+
+                <!-- 时间表：按周 -->
+                <div id="gl-calendar" class="gl-view">
+                    <div class="gl-cal-head">
+                        <button id="gl-cal-prev" class="secondary-button">←</button>
+                        <span id="gl-cal-label"></span>
+                        <button id="gl-cal-next" class="secondary-button">→</button>
+                    </div>
+                    <div id="gl-calendar-list" class="gl-cal-list"></div>
+                </div>
+
+                <!-- 追番：按状态过滤 -->
+                <div id="gl-collect" class="gl-view">
+                    <div class="gl-filter-row" id="gl-collect-filters"></div>
+                    <div id="gl-collect-list" class="gl-card-grid"></div>
+                </div>
+
+                <!-- 历史：最近观看 -->
+                <div id="gl-history" class="gl-view">
+                    <div id="gl-history-list" class="gl-history-list"></div>
+                </div>
+
+                <!-- 下载：任务与进度 -->
+                <div id="gl-download" class="gl-view">
+                    <div class="gl-download-head">
+                        <span class="field-label">保存目录</span>
+                        <span id="gl-download-dir" class="gl-download-dir"></span>
+                        <button id="gl-download-dir-pick" class="secondary-button">选择目录</button>
+                    </div>
+                    <div id="gl-download-list" class="gl-download-list"></div>
+                </div>
+
+                <!-- 规则：源插件管理 -->
+                <div id="gl-rules" class="gl-view">
+                    <div class="gl-rules-head">
+                        <button id="gl-rule-add" class="action-button">新建规则</button>
+                        <button id="gl-rule-import" class="secondary-button">导入</button>
+                        <button id="gl-rule-share" class="secondary-button">导出全部</button>
+                        <button id="gl-rule-catalog" class="secondary-button">在线源目录</button>
+                    </div>
+                    <div id="gl-catalog-list" class="gl-catalog-list" hidden></div>
+                    <div id="gl-rule-list" class="gl-rule-list"></div>
+                    <div id="gl-rule-editor" class="gl-rule-editor" hidden></div>
+                </div>
+
+                <!-- 源设置：弹幕 / 一起看 / 下载 / 凭据 -->
+                <div id="gl-settings" class="gl-view">
+                    <div class="gl-set-block">
+                        <h4>弹幕</h4>
+                        <label class="gl-check"><input type="checkbox" id="gl-dan-enabled"> 启用弹幕</label>
+                        <label class="gl-check"><input type="checkbox" id="gl-dan-rolling"> 滚动弹幕</label>
+                        <label class="gl-check"><input type="checkbox" id="gl-dan-top"> 顶部弹幕</label>
+                        <label class="gl-check"><input type="checkbox" id="gl-dan-bottom"> 底部弹幕</label>
+                        <label class="gl-check"><input type="checkbox" id="gl-dan-dedupe"> 去重</label>
+                        <label class="field-label">字号 <input type="number" id="gl-dan-size" min="12" max="48"
+                                class="field-input num"></label>
+                        <label class="field-label">不透明度 <input type="number" id="gl-dan-opacity" min="0.1" max="1"
+                                step="0.1" class="field-input num"></label>
+                    </div>
+                    <div class="gl-set-block">
+                        <h4>一起看</h4>
+                        <label class="field-label">服务器 <input type="text" id="gl-sp-host" class="field-input"></label>
+                        <label class="field-label">端口 <input type="number" id="gl-sp-port" class="field-input num"></label>
+                        <label class="field-label">昵称 <input type="text" id="gl-sp-user" class="field-input"></label>
+                        <label class="gl-check"><input type="checkbox" id="gl-sp-tls"> 加密连接</label>
+                    </div>
+                    <div class="gl-set-block">
+                        <h4>下载</h4>
+                        <label class="field-label">集并发 <input type="number" id="gl-dl-ep" min="1" max="8"
+                                class="field-input num"></label>
+                        <label class="field-label">分片并发 <input type="number" id="gl-dl-seg" min="1" max="16"
+                                class="field-input num"></label>
+                    </div>
+                    <div class="gl-set-block">
+                        <h4>弹幕源凭据（可选）</h4>
+                        <label class="field-label">AppId <input type="text" id="gl-cred-id" class="field-input"></label>
+                        <label class="field-label">AppKey <input type="text" id="gl-cred-key" class="field-input"></label>
+                        <div class="gl-about-note">留空时弹幕请求走匿名模式，部分源可能限流。</div>
+                    </div>
+                    <div class="gl-set-block">
+                        <h4>屏蔽词（每行一个）</h4>
+                        <textarea id="gl-shields" class="field-input" rows="4" placeholder="屏蔽词1&#10;屏蔽词2"></textarea>
+                    </div>
+                    <div class="gl-set-actions">
+                        <button id="gl-settings-save" class="action-button">保存源设置</button>
+                    </div>
+                </div>
+
+                <!-- 详情面板（作品详情 + 源/集数/播放/追番/下载/弹幕/一起看/投屏 入口） -->
+                <div id="gl-detail" class="gl-detail" hidden>
+                    <button id="gl-detail-close" class="gl-detail-close" title="关闭">×</button>
+                    <div id="gl-detail-body"></div>
+                </div>
+            </section>
+
+
             <section id="page-settings" class="page">
                 <div class="settings-cards">
                     <!-- 关于 -->
@@ -274,7 +425,7 @@
                         <h2 class="card-title">关于 LG Video</h2>
                         <div class="card-body">
                             <div class="info-row"><span class="info-label">应用版本</span><span
-                                    id="about-version">v1.2.0</span></div>
+                                    id="about-version">v2.0.0</span></div>
                             <div class="about-text small">
                                 本软件完全免费，代码已开源。开源地址：
                                 <a href="https://github.com/PointersMZX/LGVideo" target="_blank"
@@ -429,6 +580,7 @@
             </button>
         </div>
         <video id="player-video" playsinline></video>
+        <canvas id="player-danmaku" class="player-danmaku"></canvas>
         <div id="player-error" class="hidden"></div>
         <div id="player-episodes" class="player-episodes" hidden></div>
         <div id="player-controls">
@@ -448,6 +600,9 @@
                 <div class="pc-spacer"></div>
                 <button class="pc-btn" id="pc-ab" data-tip="A-B 循环">A-B</button>
                 <button class="pc-btn" id="pc-aspect" data-tip="画面比例">⧉</button>
+                <button class="pc-btn gl-pc-btn" id="pc-danmaku" data-tip="弹幕" hidden>弹幕</button>
+                <button class="pc-btn gl-pc-btn" id="pc-syncplay" data-tip="一起看" hidden>一起看</button>
+                <button class="pc-btn gl-pc-btn" id="pc-cast" data-tip="投屏" hidden>投屏</button>
                 <select id="pc-rate" class="pc-select" data-tip="倍速">
                     <option value="0.25">0.25x</option>
                     <option value="0.5">0.5x</option>
@@ -550,11 +705,14 @@
         });
     </script>
     <script src="./assets/js/toastify.min.js"></script>
+    <script src="./assets/js/hls.min.js"></script>
+    <script src="./assets/js/ganlu-engine.js"></script>
     <script src="./assets/js/themes.js"></script>
     <script src="./assets/js/browser.js"></script>
     <script src="./assets/js/local.js"></script>
     <script src="./assets/js/library.js"></script>
     <script src="./assets/js/player.js"></script>
+    <script src="./assets/js/ganlu.js"></script>
     <script src="./assets/js/settings.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script src="./assets/js/liquid-glass-shaders.js"></script>

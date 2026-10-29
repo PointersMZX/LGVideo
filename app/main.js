@@ -216,9 +216,19 @@ app.on('will-attach-webview', (e, webPreferences, params) => {
 
 // 站点伪装 UA + 剥离 CSP/XFO（解析/注入链路依赖），主窗 default 会话与 webview 会话都要挂
 const SPOOF_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
+const MOBILE_UA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36';
+// 手机模式：按 webview 标签（guest webContents id）记忆 UA 覆写，未登记的标签保持桌面 UA
+const uaModeByWebContents = new Map();
+ipcMain.on('browser-ua-mode', (event, wcId, mode) => {
+  const id = Number(wcId);
+  if (!Number.isInteger(id)) return;
+  if (mode === 'mobile') uaModeByWebContents.set(id, MOBILE_UA);
+  else uaModeByWebContents.delete(id);
+});
 function applySessionFilters(sess) {
   sess.webRequest.onBeforeSendHeaders((details, callback) => {
-    details.requestHeaders['User-Agent'] = SPOOF_UA;
+    const ua = details.webContentsId ? uaModeByWebContents.get(details.webContentsId) : null;
+    details.requestHeaders['User-Agent'] = ua || SPOOF_UA;
     callback({ requestHeaders: details.requestHeaders });
   });
   sess.webRequest.onHeadersReceived((details, callback) => {
@@ -298,6 +308,14 @@ function openPlayerWindow(payload) {
   playerWin.on('closed', () => { playerWin = null; });
   playerWin.loadFile('player-window.html');
 }
+
+// 播放器窗事件转发（一起看等事件主进程只发给主窗；主窗按需转发给播放窗，避免双窗重复反应）
+function forwardToPlayer(channel, payload) {
+  if (playerWin && !playerWin.isDestroyed()) playerWin.webContents.send(channel, payload);
+}
+['ganlu-syncplay-event', 'ganlu-syncplay-connected', 'ganlu-syncplay-connect-failed', 'ganlu-download-progress', 'ganlu-resolve-capture', 'ganlu-resolve-timeout'].forEach((ch) => {
+  ipcMain.on('ganlu-forward-' + ch, (e, payload) => forwardToPlayer(ch, payload));
+});
 
 // --- Window State Persistence ---
 function getWindowState() {
@@ -530,6 +548,7 @@ function createTray() {
     { label: '解析&浏览器', click: () => pageNav('browser') },
     { label: '本地', click: () => pageNav('local') },
     { label: '我的影视', click: () => pageNav('library') },
+    { label: '甘露影视源', click: () => pageNav('ganlu') },
     { label: '设置', click: () => pageNav('settings') },
     { type: 'separator' },
     {
@@ -544,6 +563,17 @@ function createTray() {
   tray.on('double-click', () => showMainWindow());
 }
 
+// --- 甘露影视源主进程服务（抓取代理 / 解析窗 / 本地媒体代理 / m3u8 下载 / 一起看 / DLNA 投屏 / 数据落盘）---
+const ganluMain = require('./main-ganlu.js');
+const ganluCtx = {
+  ipcMain, session, BrowserWindow, app, path, fs,
+  userDataDir: path.join(dataRoot, 'userData'), // 与 app.getPath('userData') 同源（dataRoot 旁）
+  getMainWindow: () => mainWindow,
+  getExtraWindows: () => (playerWin && !playerWin.isDestroyed() ? [playerWin] : []), // 解析/进度事件同步发给播放器窗
+  onReady: null,
+};
+ganluMain.register(ganluCtx);
+
 // --- 单实例锁（第二实例 = 聚焦现窗）---
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -557,6 +587,7 @@ if (!app.requestSingleInstanceLock()) {
 
     createWindow();
     createTray();
+    if (ganluCtx.onReady) ganluCtx.onReady(); // 启动甘露影视源本地媒体代理
   });
 
   app.on('will-quit', () => {

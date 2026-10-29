@@ -78,6 +78,17 @@
   let currentYoukuUrl = '';
   let isCurrentlyParsing = false;
   let mode = 'parse';        // 'parse' 普通解析 | 'nav' 第三方导航
+
+  // 手机/桌面版 UA（与主进程 MOBILE_UA 同值；JS 层 navigator.userAgent 用 webview.setUserAgent 同步）
+  const MOBILE_UA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36';
+  function syncUaBtn() {
+    const uaBtnEl = document.getElementById('btab-ua');
+    if (!uaBtnEl) return;
+    const tab = tabs.find(t => t.id === activeId);
+    const mobile = !!(tab && tab.uaMode === 'mobile');
+    uaBtnEl.classList.toggle('active', mobile);
+    uaBtnEl.dataset.tooltip = mobile ? '当前：手机版（点击切回桌面版）' : '当前：桌面版（点击切换手机版）';
+  }
   let youkuActive = false;
   let sleepTimer = 0;
   let loadingSafeTimer = 0;  // 转圈遮罩兜底：无论 webview 是否触发 did-stop，N 秒后强制隐藏，杜绝卡死
@@ -118,7 +129,7 @@
   function newTab(url) {
     const id = 'tab-' + (++tabCounter);
     const target = url || settings.browser.startUrl || 'https://v.qq.com';
-    tabs.push({ id, url: target, title: hostOf(target), lastActiveAt: Date.now() });
+    tabs.push({ id, url: target, title: hostOf(target), lastActiveAt: Date.now(), uaMode: 'desktop' });
     activateTab(id, true);
     renderTabs();
     return id;
@@ -161,6 +172,7 @@
     }
     renderTabs();
     syncNavState();
+    syncUaBtn();
   }
 
   // ---------- webview 创建 / 休眠 ----------
@@ -271,6 +283,11 @@
     wv.addEventListener('dom-ready', () => {
       injectGuestCSS(wv);
       updateZoom(wv);
+      // 手机模式：guest webContents 就绪后上报本标签 UA 模式（休眠唤醒重建后 id 会变，需重报）
+      const tab = tabs.find(t => t.id === id);
+      if (tab && tab.uaMode === 'mobile' && window.voidAPI.setBrowserUaMode) {
+        try { window.voidAPI.setBrowserUaMode(wv.getWebContentsId(), 'mobile'); } catch (e) {}
+      }
     });
   }
 
@@ -476,6 +493,21 @@
       resetBtn.addEventListener('click', async () => {
         const ok = await showConfirm('确定重置浏览器会话？\n将清除登录态并关闭所有标签，回到起始页。');
         if (ok) resetSession();
+      });
+      // 手机/桌面版切换（按标签记忆；UA 覆写在主进程会话层按 webContentsId 路由）
+      const uaBtn = $('btab-ua');
+      uaBtn.addEventListener('click', () => {
+        const tab = tabs.find(t => t.id === activeId);
+        const wv = webviewEls.get(activeId);
+        if (!tab || !wv) return;
+        tab.uaMode = tab.uaMode === 'mobile' ? 'desktop' : 'mobile';
+        const mobile = tab.uaMode === 'mobile';
+        try {
+          window.voidAPI.setBrowserUaMode(wv.getWebContentsId(), mobile ? 'mobile' : 'desktop');
+          wv.setUserAgent(mobile ? MOBILE_UA : '');
+          wv.reload();
+        } catch (e) {}
+        syncUaBtn();
       });
 
       // 标签条 + 按钮

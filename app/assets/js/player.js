@@ -113,11 +113,84 @@
     return ctx.list.map((p, i) => ({ type: 'file', value: p, label: '第 ' + (i + 1) + ' 项', _listIndex: i }));
   }
 
+  // ---------- 流媒体剧集懒解析（剧集页 → 解析窗捕获 m3u8/直链）----------
+  let hlsInst = null;    // hls.js 实例（流媒体 m3u8）
+  let proxyPort = null;  // 本地媒体代理端口（懒取）
+  const playerExt = { onOpen: null, onClose: null, onStreamResolved: null, seekTo: null }; // 外部扩展钩子（弹幕/一起看 等由 ganlu.js 挂载）
+
+  const pendingStreamResolve = new Map(); // tag → resolve(url|null)
+  if (api.onGanluResolveCapture) {
+    api.onGanluResolveCapture((p) => {
+      const r = pendingStreamResolve.get(p.tag);
+      if (r) { pendingStreamResolve.delete(p.tag); r(p.url); }
+    });
+  }
+  if (api.onGanluResolveTimeout) {
+    api.onGanluResolveTimeout((p) => {
+      const r = pendingStreamResolve.get(p.tag);
+      if (r) { pendingStreamResolve.delete(p.tag); r(null); }
+    });
+  }
+
+  function resolveStreamEp(ep) {
+    if (!ep.page || !api.ganluResolve) return Promise.resolve(null);
+    const tag = 'pr_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    return new Promise((resolve) => {
+      let settled = false;
+      pendingStreamResolve.set(tag, (url) => {
+        if (settled) return;
+        settled = true;
+        if (url) {
+          ep.value = url;
+          ep._kind = /\.(m3u8|m3u)([?#]|$)/i.test(url) ? 'hls' : 'media';
+          if (playerExt.onStreamResolved) { try { playerExt.onStreamResolved(ep.value, ep._kind); } catch (e) {} }
+        }
+        resolve(url ? ep : null);
+      });
+      api.ganluResolve({ url: ep.page, tag, referer: (ep.streamOpts && ep.streamOpts.referer) || '', timeoutMs: 20000 });
+    });
+  }
+
+  // 进度记忆键：文件集数 = 文件路径；流媒体集数 = 流 URL
+  const posKey = () => {
+    if (!ctx) return null;
+    if (ctx.episodes && ctx.epIndex != null) {
+      const ep = (ctx.episodes[ctx.epIndex] || {});
+      if (ep.type === 'stream') return ep.value ? 'stream|' + ep.value : null;
+      if (ep.type === 'file') return ep.value;
+    }
+    if (ctx.file) return ctx.file;
+    return null;
+  };
+
+  // 经本地媒体代理包一层（注入 UA/Referer，解决跨域与防盗链）
+  async function proxyWrap(target, opts) {
+    const apiX = (window.voidAPI || window.playerAPI || {});
+    if (!apiX.ganluProxyPort || !/^https?:\/\//i.test(target)) return null;
+    if (!proxyPort) proxyPort = await apiX.ganluProxyPort();
+    if (!proxyPort) return null;
+    const p = new URL('http://127.0.0.1:' + proxyPort + '/x?');
+    p.searchParams.set('url', target);
+    if (opts && opts.mode) p.searchParams.set('mode', opts.mode);
+    if (opts && opts.ua) p.searchParams.set('ua', opts.ua);
+    if (opts && opts.referer) p.searchParams.set('referer', opts.referer);
+    return p.toString();
+  }
+
+  function destroyHls() {
+    if (hlsInst) {
+      try { hlsInst.destroy(); } catch (e) {}
+      hlsInst = null;
+    }
+  }
+
   // ---------- 进度记忆 ----------
   async function loadPosition() {
     if (!api.getPosition || !settings.player.rememberPos) return;
+    const key = posKey();
+    if (!key) return;
     try {
-      const pos = await api.getPosition(ctx.file);
+      const pos = await api.getPosition(key);
       if (pos && isFinite(pos.t) && pos.t > 5 && video.duration && pos.t < video.duration - END_WATCHED_SEC) {
         video.currentTime = pos.t;
       }
@@ -125,12 +198,14 @@
   }
 
   function savePosition(silent) {
-    if (!api.setPosition || !settings.player.rememberPos || !ctx || !ctx.file) return;
+    if (!api.setPosition || !settings.player.rememberPos || !ctx) return;
+    const key = posKey();
+    if (!key) return;
     if (!video.duration || !isFinite(video.currentTime)) return;
     clearTimeout(saveTimer);
     const pos = { t: video.currentTime, duration: video.duration, updatedAt: Date.now() };
-    api.setPosition(ctx.file, pos).catch(() => {});
-    if (!silent && video.currentTime >= video.duration - END_WATCHED_SEC) api.clearPosition && api.clearPosition(ctx.file);
+    api.setPosition(key, pos).catch(() => {});
+    if (!silent && video.currentTime >= video.duration - END_WATCHED_SEC) api.clearPosition && api.clearPosition(key);
   }
 
   // ---------- 集数切换 ----------
@@ -146,6 +221,33 @@
       }
       return;
     }
+    if (ep.type === 'stream') {
+      // 流媒体集数：已解析（有 value）直接播；否则先走解析窗拿 m3u8/直链
+      savePosition(true);
+      const streamOpts = ep.streamOpts || null;
+      const openEp = (epLoaded) => load({
+        file: epLoaded ? ep.value : '',
+        title: ctx.title ? ctx.title : (ep.label || ep.value),
+        stream: ep._kind === 'hls' ? 'hls' : true,
+        streamOpts,
+        list: ctx.list, index: ctx.list ? ctx.list.indexOf(ctx.file) : 0,
+        episodes: ctx.episodes, epIndex: idx, autoNext: ctx.autoNext !== false,
+      });
+      if (ep.value) { openEp(true); return; }
+      el.error.classList.remove('hidden');
+      el.error.innerHTML = '<div class="err-title">正在解析播放地址…</div><div class="err-desc">' + (ep.label || '') + '</div>';
+      resolveStreamEp(ep).then((epLoaded) => {
+        if (!epLoaded || ctx.epIndex !== idx || !open) return; // 已切走或播放器已关
+        if (!epLoaded) {
+          el.error.classList.remove('hidden');
+          el.error.innerHTML = '<div class="err-title">解析不到播放地址</div><div class="err-desc">该集页可能失效或需要登录，试试其它线路。</div><button id="player-error-close">返回</button>';
+          $('player-error-close').addEventListener('click', close);
+        } else {
+          openEp(true);
+        }
+      });
+      return;
+    }
     savePosition(true);
     const file = ep.value;
     const title = ctx.title ? ctx.title : file.split(/[\\/]/).pop();
@@ -153,7 +255,7 @@
   }
 
   // ---------- 核心：装载与播放 ----------
-  function load(c) {
+  async function load(c) {
     ctx = normalize(c);
     settings = activeSettings();
     if (ctx.settings) { settings.player = ctx.settings.player || settings.player; }
@@ -164,7 +266,6 @@
     el.error.classList.add('hidden');
     video.removeAttribute('src');
     video.load();
-    video.src = fileSrc(ctx.file);
     baseRate = 1;
     video.playbackRate = 1;
     el.rate.value = '1';
@@ -181,6 +282,47 @@
       false
     );
     updateMediaSession();
+
+    // 视频源：本地文件 vs 网络流（m3u8 走 hls.js；直连流经本地代理注头）
+    if (ctx.stream) {
+      const src = String(ctx.file || '');
+      if (playerExt.onStreamResolved && src) { try { playerExt.onStreamResolved(src, /\.m3u8([?#]|$)/i.test(src) ? 'hls' : 'media'); } catch (e) {} }
+      const isHls = /\.m3u8([?#]|$)/i.test(src) || ctx.stream === 'hls' || (ctx.streamOpts && ctx.streamOpts.hls);
+      if (isHls) {
+        const Hls = window.Hls;
+        const proxied = await proxyWrap(src, { mode: 'playlist', ua: ctx.streamOpts && ctx.streamOpts.ua, referer: ctx.streamOpts && ctx.streamOpts.referer });
+        const useHlsJs = Hls && Hls.isSupported();
+        if (!proxied || (!useHlsJs && !video.canPlayType('application/vnd.apple.mpegurl'))) {
+          el.error.classList.remove('hidden');
+          el.error.innerHTML = '<div class="err-title">流媒体加载失败</div><div class="err-desc">本地媒体代理不可用或当前引擎不支持该流。</div><button id="player-error-close">返回</button>';
+          $('player-error-close').addEventListener('click', close);
+          open = false;
+          return;
+        }
+        const feed = proxied || src;
+        if (useHlsJs) {
+          hlsInst = new Hls({ manifestLoadingTimeOut: 20000, levelLoadingTimeOut: 20000, fragLoadingTimeOut: 30000 });
+          hlsInst.on(Hls.Events.ERROR, (_e, data) => {
+            if (data.fatal) {
+              el.error.classList.remove('hidden');
+              el.error.innerHTML = '<div class="err-title">流媒体中断</div><div class="err-desc">' + (data.details || '未知错误') + '</div><button id="player-error-close">返回</button>';
+              $('player-error-close').addEventListener('click', close);
+            }
+          });
+          hlsInst.loadSource(feed);
+          hlsInst.attachMedia(video);
+        } else {
+          video.src = feed;
+        }
+      } else {
+        const proxied = await proxyWrap(src, { ua: ctx.streamOpts && ctx.streamOpts.ua, referer: ctx.streamOpts && ctx.streamOpts.referer });
+        video.src = proxied || src;
+      }
+      video.play().catch(() => {});
+    } else {
+      video.src = fileSrc(ctx.file);
+      video.play().catch(() => {});
+    }
 
     // 集数面板
     if (ctx.episodes && ctx.episodes.length > 1) {
@@ -200,15 +342,17 @@
       el.next.disabled = idx >= eps.length - 1;
     }
 
-    video.play().catch(() => {});
+    if (playerExt.onOpen) { try { playerExt.onOpen(ctx, video); } catch (e) { console.warn('player onOpen hook:', e); } }
   }
 
   function close() {
     savePosition(false);
+    if (playerExt.onClose) { try { playerExt.onClose(ctx, video); } catch (e) {} }
     open = false;
     video.pause();
     video.removeAttribute('src');
     video.load();
+    destroyHls();
     layer.classList.remove('buffering');
     layer.classList.add('hidden');
     el.episodes.classList.remove('show');
@@ -225,7 +369,7 @@
       row.className = 'pe-item' + (i === ctx.epIndex ? ' current' : '');
       const t = document.createElement('span');
       t.className = 'pe-type';
-      t.textContent = ep.type === 'file' ? '本地' : '链接';
+      t.textContent = ep.type === 'file' ? '本地' : (ep.type === 'stream' ? '流媒体' : '链接');
       const n = document.createElement('span');
       n.style.flex = '1';
       n.style.overflow = 'hidden';
@@ -564,7 +708,8 @@
 
   // ---------- 对外接口 ----------
   window.XVPlayer = {
-    // ctx: { file, title, list?, index?, episodes?, epIndex? }
+    // ctx: { file, title, list?, index?, episodes?, epIndex?, stream?, streamOpts?, settings? }
+    // stream=true 时 file 为网络流地址（m3u8 走 hls.js；直连流经代理注头）
     open(ctx) {
       const mode = (window.XVSettings && window.XVSettings.getSettings && window.XVSettings.getSettings().player.mode) || 'overlay';
       if (mode === 'window' && !isWindowMode) {
@@ -577,13 +722,16 @@
     },
     close,
     get isOpen() { return open; },
+    // 扩展钩子（甘露影视源挂载：弹幕 / 一起看 / 投屏；本地播放器不挂载时为空操作）
+    ext: playerExt,
+    getVideo: () => video,
   };
 
   // 新窗口形态：等主进程发 player-load
   if (isWindowMode) {
     if (window.playerAPI && window.playerAPI.onPlayerLoad) {
       window.playerAPI.onPlayerLoad((payload) => {
-        if (payload && payload.file) {
+        if (payload && (payload.file || payload.stream)) {
           if (payload.settings) settings = { ...settings, ...payload.settings };
           load(payload);
           wake();
