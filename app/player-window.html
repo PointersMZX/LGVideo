@@ -16,6 +16,7 @@
         }
     </style>
     <link rel="stylesheet" href="assets/css/player.css">
+    <link rel="stylesheet" href="assets/css/toastify.min.css">
 </head>
 
 <body>
@@ -50,14 +51,22 @@
                 <span class="pc-time"><span id="pc-cur">0:00</span> / <span id="pc-dur">0:00</span></span>
                 <div class="pc-spacer"></div>
                 <button class="pc-btn" id="pc-ab" data-tip="A-B 循环">A-B</button>
+                <button class="pc-btn" id="pc-aspect" data-tip="画面比例">⧉</button>
                 <select id="pc-rate" class="pc-select" data-tip="倍速">
+                    <option value="0.25">0.25x</option>
                     <option value="0.5">0.5x</option>
                     <option value="0.75">0.75x</option>
                     <option value="1" selected>1.0x</option>
                     <option value="1.25">1.25x</option>
                     <option value="1.5">1.5x</option>
+                    <option value="1.75">1.75x</option>
                     <option value="2">2.0x</option>
+                    <option value="2.25">2.25x</option>
+                    <option value="2.5">2.5x</option>
+                    <option value="2.75">2.75x</option>
+                    <option value="3">3.0x</option>
                 </select>
+                <button class="pc-btn" id="pc-shot" data-tip="截图 (S)">📷</button>
                 <div class="pc-vol">
                     <button class="pc-btn" id="pc-mute">🔊</button>
                     <input type="range" id="pc-volume" min="0" max="1" step="0.02" value="1" class="pc-volume">
@@ -66,6 +75,7 @@
             </div>
         </div>
     </div>
+    <script src="./assets/js/toastify.min.js"></script>
     <script src="./assets/js/player.js"></script>
 </body>
 

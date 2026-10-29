@@ -437,6 +437,22 @@ ipcMain.handle('position:clear', (event, file) => {
   writeStore('positions.json', store);
 });
 
+// --- 播放器截图（渲染层 canvas 截帧 → userData/screenshots 落盘 PNG）---
+ipcMain.handle('screenshot:save', async (event, dataUrl, suggestName) => {
+  try {
+    const m = /^data:image\/png;base64,(.+)$/.exec(String(dataUrl || ''));
+    if (!m) return { ok: false, error: '数据无效' };
+    const dir = path.join(app.getPath('userData'), 'screenshots');
+    await fs.promises.mkdir(dir, { recursive: true });
+    const safe = String(suggestName || 'LGVideo').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim().slice(0, 60) || 'LGVideo';
+    const file = path.join(dir, `${safe}_${Date.now()}.png`);
+    await fs.promises.writeFile(file, Buffer.from(m[1], 'base64'));
+    return { ok: true, path: file };
+  } catch (e) {
+    return { ok: false, error: String((e && e.message) || e) };
+  }
+});
+
 ipcMain.handle('scan:dir', (event, dir) => scanVideoDir(dir));
 ipcMain.handle('scan:dirs', (event, dirs) => {
   const all = [];

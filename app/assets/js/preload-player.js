@@ -16,4 +16,11 @@ contextBridge.exposeInMainWorld('playerAPI', {
   getPosition: (file) => ipcRenderer.invoke('position:get', file),
   setPosition: (file, pos) => ipcRenderer.invoke('position:set', file, pos),
   clearPosition: (file) => ipcRenderer.invoke('position:clear', file),
+
+  // 设置（音量/画面比例等播放器偏好写回主窗同一份 settings.json）
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  setSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
+
+  // 截图（canvas dataURL → userData/screenshots PNG）
+  saveScreenshot: (dataUrl, name) => ipcRenderer.invoke('screenshot:save', dataUrl, name),
 });

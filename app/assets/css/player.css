@@ -403,3 +403,27 @@
     margin-left: 3px;
     color: #e8c98a;
 }
+
+/* 缓冲转圈（waiting 事件挂 .buffering） */
+#player-layer.buffering::after,
+#player-window-root.buffering::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 36px;
+    height: 36px;
+    margin: -18px 0 0 -18px;
+    border: 3px solid rgba(232, 201, 138, 0.22);
+    border-top-color: #e8c98a;
+    border-radius: 50%;
+    animation: pc-spin 0.9s linear infinite;
+    z-index: 5;
+    pointer-events: none;
+}
+
+@keyframes pc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
