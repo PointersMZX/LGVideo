@@ -4,3 +4,11 @@ release/
 app/userData/
 *.log
 .DS_Store
+mobile/node_modules/
+mobile/*.keystore
+mobile/release/
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/local.properties
+mobile/android/capacitor-cordova-android-plugins/build/

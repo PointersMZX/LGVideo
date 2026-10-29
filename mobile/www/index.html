@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <title>甘露影视</title>
+    <link rel="stylesheet" href="./ganlu.css">
+    <style>
+        /* 移动版外壳（在 ganlu.css 基础上做手机适配） */
+        :root { --pv-bottom: 56px; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: #0d0716; color: #f0ecff;
+            font-family: -apple-system, 'MiSans', 'HarmonyOS Sans', 'Microsoft YaHei', sans-serif;
+            overscroll-behavior: none;
+        }
+        #app { position: fixed; inset: 0; display: flex; flex-direction: column; }
+
+        .pv-head {
+            flex: none; display: flex; align-items: center; gap: 10px;
+            padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
+            background: rgba(23, 13, 36, 0.92);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .pv-head .pv-title { font-size: 16px; font-weight: 700; color: #e8c98a; flex: 1; }
+        .pv-head .pv-sub { font-size: 11px; color: #9a8fc0; }
+
+        .pv-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 12px calc(var(--pv-bottom) + 24px); }
+        .pv-view { display: none; }
+        .pv-view.active { display: block; }
+
+        /* 底部导航 */
+        .pv-nav {
+            position: absolute; left: 0; right: 0; bottom: 0; height: var(--pv-bottom);
+            display: flex; padding-bottom: env(safe-area-inset-bottom);
+            background: rgba(23, 13, 36, 0.96);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .pv-nav button {
+            flex: 1; border: none; background: transparent; color: #9a8fc0;
+            font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+        }
+        .pv-nav button .pv-ico { font-size: 19px; line-height: 1; }
+        .pv-nav button.active { color: #e8c98a; }
+
+        /* 卡片网格 */
+        .pv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .gl-card { cursor: default; }
+        .gl-card-cover { aspect-ratio: 3 / 4; }
+        .gl-card-cover img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; background: #1b1130; }
+
+        .pv-sec { font-size: 13.5px; font-weight: 700; color: #e8c98a; margin: 14px 2px 8px; }
+        .pv-empty { color: #9a8fc0; font-size: 12.5px; text-align: center; padding: 26px 0; }
+
+        /* 搜索栏 */
+        .pv-search { display: flex; gap: 8px; margin-bottom: 12px; }
+        .pv-search input {
+            flex: 1; min-width: 0; height: 38px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06); color: #f0ecff; padding: 0 12px; font-size: 13.5px; outline: none;
+        }
+        .pv-search button {
+            flex: none; padding: 0 16px; border: none; border-radius: 9px;
+            background: linear-gradient(135deg, #8b30d6, #a34ce6); color: #fff; font-size: 13.5px; font-weight: 600;
+        }
+        .pv-select {
+            width: 100%; height: 36px; margin-bottom: 10px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); color: #f0ecff; font-size: 12.5px;
+        }
+        .pv-select option { background: #170d24; }
+
+        /* 播放层（全屏） */
+        #pv-player {
+            position: fixed; inset: 0; z-index: 500; background: #000;
+            display: none; flex-direction: column;
+        }
+        #pv-player.open { display: flex; }
+        #pv-video { width: 100%; flex: 1; background: #000; object-fit: contain; }
+        .pv-player-bar {
+            flex: none; display: flex; align-items: center; gap: 8px;
+            padding: 10px 12px calc(env(safe-area-inset-bottom) + 10px);
+            background: rgba(13, 7, 22, 0.95);
+        }
+        .pv-player-bar button, .pv-player-bar select {
+            border: none; border-radius: 8px; background: rgba(255,255,255,0.08); color: #f0ecff;
+            font-size: 12.5px; padding: 9px 12px;
+        }
+        .pv-player-bar .pv-close { background: rgba(139, 48, 214, 0.4); color: #e8c98a; }
+        #pv-eps { flex: 1; display: flex; gap: 6px; overflow-x: auto; }
+        #pv-eps button { flex: none; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #pv-eps button.cur { background: rgba(139, 48, 214, 0.4); color: #e8c98a; }
+
+        /* 详情面板 */
+        #pv-detail { position: fixed; inset: 0; z-index: 400; background: #0d0716; display: none; flex-direction: column; }
+        #pv-detail.open { display: flex; }
+        .pv-detail-head { flex: none; display: flex; align-items: center; padding: calc(env(safe-area-inset-top) + 10px) 12px 10px; gap: 10px; }
+        .pv-detail-head button { border: none; background: rgba(255,255,255,0.08); color: #f0ecff; border-radius: 8px; padding: 8px 14px; font-size: 13px; }
+        .pv-detail-body { flex: 1; overflow-y: auto; padding: 0 14px 30px; }
+        .pv-ep { display: inline-block; margin: 0 6px 8px 0; padding: 8px 14px; border-radius: 8px;
+            background: rgba(255,255,255,0.07); color: #f0ecff; font-size: 12.5px; border: none; }
+        .pv-ep.cur { background: rgba(139, 48, 214, 0.4); color: #e8c98a; }
+        .pv-road { margin: 14px 0 6px; color: #9a8fc0; font-size: 12.5px; font-weight: 700; }
+
+        /* 规则行 */
+        .pv-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px;
+            background: rgba(255,255,255,0.05); margin-bottom: 8px; font-size: 13px; }
+        .pv-row .pv-row-main { flex: 1; min-width: 0; overflow: hidden; }
+        .pv-row .pv-row-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pv-row .pv-row-meta { font-size: 11px; color: #9a8fc0; margin-top: 2px; }
+        .pv-row button { border: none; border-radius: 7px; background: rgba(139,48,214,0.3); color: #e8c98a; padding: 7px 12px; font-size: 12px; }
+        .pv-row button.danger { background: rgba(255,103,104,0.2); color: #ff8a8b; }
+        textarea.pv-area { width: 100%; min-height: 110px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06); color: #f0ecff; font-size: 12px; padding: 10px; outline: none; resize: vertical; }
+        .pv-btn-line { display: flex; gap: 8px; margin: 10px 0; }
+        .pv-btn-line button { flex: 1; border: none; border-radius: 9px; padding: 11px 0; font-size: 13px; font-weight: 600;
+            background: linear-gradient(135deg, #8b30d6, #a34ce6); color: #fff; }
+        .pv-btn-line button.ghost { background: rgba(255,255,255,0.08); color: #f0ecff; font-weight: 500; }
+
+        #pv-toast { position: fixed; top: calc(env(safe-area-inset-top) + 52px); left: 0; right: 0; z-index: 900;
+            display: flex; justify-content: center; pointer-events: none; }
+        #pv-toast span { background: #321b4d; color: #f0ecff; font-size: 12.5px; padding: 9px 18px; border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); max-width: 82%; text-align: center; }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="pv-head">
+            <div class="pv-title">甘露影视源</div>
+            <div class="pv-sub" id="pv-rules-count"></div>
+        </div>
+
+        <div class="pv-body">
+            <!-- 首页 -->
+            <div id="view-home" class="pv-view active">
+                <div class="pv-sec">本周时间表</div>
+                <div id="pv-home-cal" class="pv-grid"></div>
+                <div class="pv-sec">热门作品</div>
+                <div id="pv-home-hot" class="pv-grid"></div>
+            </div>
+
+            <!-- 搜索 -->
+            <div id="view-search" class="pv-view">
+                <div class="pv-search">
+                    <input type="text" id="pv-kw" placeholder="搜索作品 / 片名…">
+                    <button id="pv-search-btn">搜索</button>
+                </div>
+                <select id="pv-source" class="pv-select"></select>
+                <div id="pv-search-results" class="pv-grid"></div>
+            </div>
+
+            <!-- 追番 -->
+            <div id="view-collect" class="pv-view">
+                <div class="pv-sec">我的追番</div>
+                <div id="pv-collect" class="pv-grid"></div>
+            </div>
+
+            <!-- 规则 -->
+            <div id="view-rules" class="pv-view">
+                <div class="pv-sec">规则（影视源）</div>
+                <div id="pv-rule-list"></div>
+                <div class="pv-btn-line">
+                    <button id="pv-rule-catalog" class="ghost">在线源目录</button>
+                    <button id="pv-rule-import">导入规则</button>
+                </div>
+                <textarea id="pv-rule-text" class="pv-area" placeholder="粘贴规则 JSON / 分享链接（每行一条，或 JSON 数组）"></textarea>
+                <div class="pv-btn-line"><button id="pv-rule-apply">从文本导入</button></div>
+                <div id="pv-catalog" hidden></div>
+            </div>
+
+            <!-- 关于 -->
+            <div id="view-about" class="pv-view">
+                <div class="pv-sec">关于</div>
+                <div class="pv-row"><div class="pv-row-main">
+                    <div class="pv-row-name">甘露影视（LG Video）移动端</div>
+                    <div class="pv-row-meta" id="pv-version">v2.0.0</div>
+                    <div class="pv-row-meta">规则引擎与桌面端同源 · 在线源目录 / 弹幕 / 一起看等能力将随版本陆续开放</div>
+                </div></div>
+            </div>
+        </div>
+
+        <nav class="pv-nav">
+            <button data-view="home" class="active"><span class="pv-ico">🏠</span>首页</button>
+            <button data-view="search"><span class="pv-ico">🔍</span>搜索</button>
+            <button data-view="collect"><span class="pv-ico">⭐</span>追番</button>
+            <button data-view="rules"><span class="pv-ico">📋</span>规则</button>
+            <button data-view="about"><span class="pv-ico">ℹ️</span>关于</button>
+        </nav>
+    </div>
+
+    <!-- 详情 -->
+    <div id="pv-detail">
+        <div class="pv-detail-head">
+            <button id="pv-detail-back">← 返回</button>
+            <div style="flex:1"></div>
+        </div>
+        <div class="pv-detail-body" id="pv-detail-body"></div>
+    </div>
+
+    <!-- 播放 -->
+    <div id="pv-player">
+        <video id="pv-video" playsinline webkit-playsinline></video>
+        <div class="pv-player-bar">
+            <button class="pv-close" id="pv-player-close">关闭</button>
+            <select id="pv-rate">
+                <option value="1">1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2.0x</option>
+                <option value="0.5">0.5x</option>
+            </select>
+            <div id="pv-eps"></div>
+        </div>
+    </div>
+
+    <div id="pv-toast" hidden><span id="pv-toast-text"></span></div>
+
+    <script src="./hls.min.js"></script>
+    <script src="./shim.js"></script>
+    <script src="./ganlu-engine.js"></script>
+    <script src="./app.js"></script>
+</body>
+
+</html>

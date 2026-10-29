@@ -1,0 +1,11 @@
+{
+  "appId": "com.lg.video",
+  "appName": "甘露影视",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
