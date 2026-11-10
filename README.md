@@ -16,7 +16,9 @@
 
 ## 下载与安装
 
-在 GitHub 仓库或 Gitee 镜像的 **Releases** 页面下载安装包：
+**官网直装（推荐）**：[lgvideo.pointers-box.cc.cd](https://lgvideo.pointers-box.cc.cd) 下载页，提供安装版与便携版。
+
+也可以在 GitHub 仓库或 Gitee 镜像的 **Releases** 页面下载安装包：
 
 | 版本 | 系统要求 |
 |---|---|
@@ -26,6 +28,8 @@
 另有便携版（7z 压缩包）：解压即用，无需安装。
 
 设置、影视库与播放进度自动保存在安装目录旁的 userData 文件夹，搬家时连同该文件夹一起移动即可带走全部数据。
+
+产品总览与平台公告见 [官网主站](https://www.pointers-box.cc.cd)。
 
 ## 应用内更新
 
@@ -38,6 +42,7 @@
 
 ## 社区与反馈
 
+- 官网：https://lgvideo.pointers-box.cc.cd
 - GitHub：https://github.com/PointersMZX/LGVideo
 - Gitee：https://gitee.com/PointersMZX/LGVideo
 
