@@ -65,9 +65,14 @@ public final class JsonStore {
         return out;
     }
 
-    /** 与桌面 main.js DEFAULT_SETTINGS 同源（apiList/浏览器起始页等） */
+    /** 与桌面 main.js DEFAULT_SETTINGS 同源（apiList/浏览器起始页/主题/开发者等） */
     private static final String DEFAULT_SETTINGS = "{"
             + "\"localDirs\":[],"
+            + "\"theme\":\"dark\","
+            + "\"themeAccent\":\"#8b30d6\","
+            + "\"localUser\":{},"
+            + "\"devMode\":false,"
+            + "\"autoCheckUpdate\":false,"
             + "\"themeId\":\"xingyu\","
             + "\"customThemes\":[],"
             + "\"player\":{\"mode\":\"overlay\",\"autoNext\":true,\"rememberPos\":true},"

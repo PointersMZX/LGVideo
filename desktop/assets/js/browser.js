@@ -524,6 +524,17 @@
         newTab();
       }
 
+      // Android：引导卡显示（原生浏览器承载浏览与解析）
+      if (NATIVE_BROWSER) {
+        const guide = document.getElementById('mobile-browser-guide');
+        if (guide) {
+          guide.hidden = false;
+          const api = settings.apiList.find(a => a.value === apiSelect.value) || settings.apiList[0];
+          const nameEl = document.getElementById('guide-api-name');
+          if (nameEl && api) nameEl.textContent = api.label;
+        }
+      }
+
       // 解析选项（桌面 = 页内 webview 导航；Android = 唤起原生浏览器，解析在其工具栏触发）
       platformSelect.addEventListener('change', () => {
         isCurrentlyParsing = false;

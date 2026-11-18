@@ -13,6 +13,9 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- 状态栏底色对齐主题深空紫（light 主题由 WebView 内渲染，状态栏保持深色底更稳） -->
+        <item name="android:statusBarColor">#0d0716</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
 

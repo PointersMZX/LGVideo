@@ -3,12 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>LG Video</title>
     <style>
-        /* CRITICAL: Inline background to prevent white flash before CSS load */
+        /* CRITICAL: Inline background to prevent white flash before CSS load
+           （不带 !important：主题注入块在 CSS 加载后覆盖；dark 默认底色防白闪） */
         html,
         body {
-            background-color: #0d0716 !important;
+            background-color: #0d0716;
             margin: 0;
             padding: 0;
             width: 100%;
@@ -191,6 +193,16 @@
 
                 <div class="webview-stack" id="webview-stack"></div>
 
+                <!-- Android 引导卡（原生浏览器承载浏览与解析；webview 标签不可用） -->
+                <div id="mobile-browser-guide" class="glass-card" hidden>
+                    <h2 class="card-title">网页解析</h2>
+                    <div class="card-body about-text">
+                        <p>选择上方视频平台（或切换第三方导航站点），将在<b>内置浏览器</b>中打开。</p>
+                        <p>浏览到具体视频页面后，点浏览器工具栏的<b>「解析」</b>按钮即可换源播放；浏览器支持多标签、桌面版 UA 与全屏播放。</p>
+                        <p>当前解析接口：<b id="guide-api-name">—</b>，可在「设置 → 解析接口管理」中更换。</p>
+                    </div>
+                </div>
+
                 <div id="youku-custom-page" class="parsing-only" style="display: none;">
                     <div class="icon-container">
                         <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none"
@@ -266,9 +278,22 @@
                 </div>
             </section>
 
-            <!-- ④ 设置（照 Pointers-BOX 卡片流） -->
+            <!-- ④ 设置（对齐 Pointers-BOX 卡片流：用户卡片置顶 / 禁折叠 / 开发者置底） -->
             <section id="page-settings" class="page">
-                <div class="settings-cards">
+                <div class="settings-cards" id="settings-main">
+                    <!-- 本地用户卡片（置顶；点击进入资料内页） -->
+                    <button class="user-card glass-card hoverable" id="user-card" type="button">
+                        <span id="user-avatar" class="user-avatar placeholder"></span>
+                        <span class="user-meta">
+                            <span class="user-name-row">
+                                <span class="user-name" id="user-name">LG 用户</span>
+                                <span class="user-badge" id="user-dev-badge" hidden>开发者模式</span>
+                            </span>
+                            <span class="user-status" id="user-status">点击编辑个人资料</span>
+                        </span>
+                        <span class="page-actions" style="flex-shrink:0">›</span>
+                    </button>
+
                     <!-- 关于 -->
                     <section class="settings-card glass-card hoverable" id="card-about">
                         <h2 class="card-title">关于 LG Video</h2>
@@ -295,24 +320,17 @@
                         </div>
                     </section>
 
-                    <!-- 主题 -->
+                    <!-- 主题（light/dark 预览卡 + 强调色；旧自定义主题已迁移） -->
                     <section class="settings-card glass-card hoverable" id="card-theme">
                         <h2 class="card-title">主题</h2>
                         <div class="card-body">
                             <div id="theme-tiles" class="theme-tiles"></div>
-                            <div id="theme-custom" class="theme-custom">
-                                <div class="theme-custom-head">
-                                    <input type="text" id="theme-custom-name" class="field-input" placeholder="主题名称"
-                                        maxlength="12">
-                                    <button id="theme-custom-new" class="secondary-button small">新建自定义</button>
-                                    <button id="theme-custom-save" class="action-button small">保存</button>
-                                </div>
-                                <div id="theme-pickers" class="theme-pickers"></div>
-                                <div class="theme-custom-row">
-                                    <label class="check-label"><input type="checkbox" id="theme-dark-flag" checked> 深色主题</label>
-                                    <label class="check-label"><input type="checkbox" id="theme-glass-flag" checked> 启用液态玻璃</label>
-                                    <button id="theme-custom-delete" class="secondary-button small danger" hidden>删除此主题</button>
-                                </div>
+                            <div class="info-row" style="margin-top: 12px;">
+                                <span class="info-label">强调色</span>
+                                <div class="accent-row" id="accent-row"></div>
+                                <input type="color" id="accent-color-input" class="accent-input" value="#8b30d6">
+                                <input type="text" id="accent-hex-input" class="field-input" style="width: 96px;"
+                                    placeholder="#8b30d6" maxlength="7">
                             </div>
                         </div>
                     </section>
@@ -396,14 +414,74 @@
                         </div>
                     </section>
 
-                    <!-- 更新检查 -->
+                    <!-- 更新检查（自动检测开关 + 渠道（Android 固定）+ 网盘手动入口） -->
                     <section class="settings-card glass-card hoverable" id="card-update">
                         <h2 class="card-title">更新检查</h2>
                         <div class="card-body">
+                            <div class="info-row">
+                                <span class="info-label">自动检测更新</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="update-auto-check">
+                                    <span class="switch-track"></span>
+                                </label>
+                            </div>
+                            <div class="info-row" id="update-channel-row">
+                                <span class="info-label">更新渠道</span>
+                                <select id="update-channel-select" class="parse-select">
+                                    <option value="github">全球官方（GitHub）</option>
+                                    <option value="gitee">国内镜像（Gitee）</option>
+                                </select>
+                            </div>
                             <div id="update-area" class="update-area"></div>
                             <div class="card-actions">
                                 <button id="update-check-btn" class="action-button">检查更新</button>
+                                <button id="netdisk-update-btn" class="secondary-button" hidden>网盘更新</button>
                             </div>
+                            <div class="about-text small">「网盘更新」打开网盘分享页手动下载最新安装包，检测渠道不受影响。</div>
+                        </div>
+                    </section>
+
+                    <!-- 开发者模式（独立置底；开启需两步验证） -->
+                    <section class="settings-card glass-card hoverable" id="card-dev">
+                        <h2 class="card-title">开发者模式</h2>
+                        <div class="card-body">
+                            <div class="info-row">
+                                <span class="info-label">开发者模式</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="dev-mode-switch">
+                                    <span class="switch-track"></span>
+                                </label>
+                            </div>
+                            <div class="about-text small">开启后用户卡片显示「开发者模式」；强制更新弹窗出现「开发者测试」入口。开启需通过开发者激活验证。</div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 用户资料内页（点用户卡片进入） -->
+                <div id="user-page" class="settings-cards" hidden>
+                    <div class="page-head" style="padding: 0 0 8px;">
+                        <button id="user-page-back" class="nav-button" data-tooltip="返回设置">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </button>
+                        <div class="page-title">用户设置</div>
+                    </div>
+                    <section class="settings-card glass-card" id="card-user-edit">
+                        <div class="card-body">
+                            <div class="user-edit-row">
+                                <span id="user-avatar-edit" class="user-avatar placeholder"></span>
+                                <button id="user-avatar-btn" class="secondary-button small">上传头像</button>
+                                <span class="about-text small" id="avatar-hint"></span>
+                            </div>
+                            <label class="field-label">用户名</label>
+                            <input type="text" id="user-username" class="field-input" placeholder="用户名" maxlength="20">
+                            <label class="field-label">状态</label>
+                            <input type="text" id="user-status-input" class="field-input" placeholder="一句话状态" maxlength="30">
+                            <label class="field-label">个性签名</label>
+                            <textarea id="user-signature" class="field-input" rows="3" placeholder="个性签名（可选）" maxlength="120"></textarea>
                         </div>
                     </section>
                 </div>
@@ -411,9 +489,50 @@
         </main>
     </div>
 
+    <!-- 底部导航（Android 专属，renderer.js 渲染；桌面隐藏） -->
+    <nav id="bottomnav" class="bottom-nav" hidden></nav>
+
     <!-- 全局加载层 -->
     <div id="loading-overlay" class="hidden">
         <div class="spinner"></div>
+    </div>
+
+    <!-- 更新提示弹窗（5s 自动检测 + 手动检查共用；强制版无遮罩逃逸） -->
+    <div id="update-prompt-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>发现新版本</h3>
+                <span id="update-forced-badge" class="user-badge" style="color: #ff9f43;" hidden>强制更新</span>
+            </div>
+            <div class="modal-body">
+                <p id="update-prompt-text"></p>
+                <p class="about-text small" id="update-forced-tip" hidden>版本跨度已达 2 个版本级以上，属于重要更新，建议尽快升级。</p>
+            </div>
+            <div class="modal-footer">
+                <button id="update-skip-btn" class="modal-button secondary">暂不更新</button>
+                <button id="update-devtest-btn" class="modal-button secondary" hidden>开发者测试</button>
+                <button id="update-apply-btn" class="modal-button primary">立即更新</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 开发者激活弹窗（两步：口令 → 随机填空） -->
+    <div id="dev-activation-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>开发者激活</h3>
+            </div>
+            <div class="modal-body">
+                <div class="dev-steps" id="dev-steps">第 1 / 2 步</div>
+                <p id="dev-step-tip" class="about-text small"></p>
+                <input type="text" id="dev-step-input" class="field-input" placeholder="" maxlength="20">
+                <p id="dev-step-error" class="about-text small" style="color: #ff8f8f;" hidden></p>
+            </div>
+            <div class="modal-footer">
+                <button id="dev-step-cancel" class="modal-button secondary">取消</button>
+                <button id="dev-step-next" class="modal-button primary">下一步</button>
+            </div>
+        </div>
     </div>
 
     <!-- 播放器（窗口内全屏叠层形态） -->
@@ -544,14 +663,15 @@
     <script src="./assets/js/platform-bridge.js"></script>
     <script src="./assets/js/toastify.min.js"></script>
     <script src="./assets/js/themes.js"></script>
+    <script src="./assets/js/glass-svg.js"></script>
     <script src="./assets/js/browser.js"></script>
     <script src="./assets/js/local.js"></script>
     <script src="./assets/js/library.js"></script>
     <script src="./assets/js/player.js"></script>
     <script src="./assets/js/settings.js"></script>
+    <script src="./assets/js/update-prompt.js"></script>
+    <script src="./assets/js/dev-activation.js"></script>
     <script src="./assets/js/renderer.js"></script>
-    <script src="./assets/js/liquid-glass-shaders.js"></script>
-    <script src="./assets/js/liquid-glass.js"></script>
     <script src="./assets/js/liquid-motion.js"></script>
 </body>
 

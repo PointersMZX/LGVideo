@@ -225,54 +225,8 @@ body {
     z-index: 1;
 }
 
-/* ③ 流动光泽带：斜向白带周期性扫过（sheen，10s 级慢速，克制） */
-.glass-card::before {
-    content: "";
-    position: absolute;
-    inset: -40% -60%;
-    z-index: 0;
-    pointer-events: none;
-    background: linear-gradient(105deg,
-            transparent 38%,
-            rgba(255, 255, 255, calc(var(--glass-sheen-a) * 0.4)) 46%,
-            rgba(255, 255, 255, var(--glass-sheen-a)) 50%,
-            rgba(255, 255, 255, calc(var(--glass-sheen-a) * 0.4)) 54%,
-            transparent 62%);
-    transform: translateX(-60%) skewX(-14deg);
-    animation: glass-sheen calc(16s / var(--flow-speed)) ease-in-out infinite;
-    will-change: transform;
-}
-
-@keyframes glass-sheen {
-    0% {
-        transform: translateX(-60%) skewX(-14deg);
-    }
-
-    55% {
-        transform: translateX(60%) skewX(-14deg);
-    }
-
-    100% {
-        transform: translateX(60%) skewX(-14deg);
-    }
-}
-
-/* ④ 指针光斑：--gx/--gy 由 liquid-motion.js 写入元素局部坐标（-1~1），hover 浮现 */
-.glass-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background: radial-gradient(280px circle at calc(50% + var(--gx, 0) * 45%) calc(50% + var(--gy, 0) * 45%),
-            var(--glass-glow-c), transparent 62%);
-    opacity: 0;
-    transition: opacity 0.45s ease;
-}
-
-.glass-card:hover::after {
-    opacity: 1;
-}
+/* ③ 流动光泽带 + ④ 指针光斑 v2 起由 liquid-glass.css 统一承担（零染色链），
+   此处旧定义已移除，避免与 .glass-card 新 ::before 双重叠加 */
 
 /* 卡片 hover 微浮（04：220ms 投影加深 + 内泛光提亮；触屏不粘住） */
 @media (hover: hover) {
@@ -428,18 +382,16 @@ body {
     color: var(--nav-color-hover, rgba(240, 236, 255, 0.85));
 }
 
+/* 导航选中态 v2：零色（中性磨砂 + 双棱线，由 liquid-glass.css 提供配方；
+   此处只保留文字提亮与图标提亮，强调色不参与染色） */
 .nav-item.active {
-    background: linear-gradient(135deg, rgba(139, 48, 214, 0.16), rgba(139, 48, 214, 0.08));
-    color: var(--highlight-color);
-    border-left-color: var(--highlight-color);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.12),
-        0 0 18px rgba(139, 48, 214, 0.18);
+    color: var(--text-color);
     font-weight: 600;
 }
 
 .nav-item.active svg {
     opacity: 1;
+    color: var(--lgv-accent, var(--highlight-color));
     filter: drop-shadow(0 0 4px currentColor);
 }
 
@@ -2049,4 +2001,440 @@ input[type="color"] {
 .platform-android .browser-toolbar,
 .platform-android #webview-stack {
     display: none !important;
+}
+
+/* ═══════════════ Android 移动端适配（platform-android 由 platform-bridge.js 注入） ═══════════════
+   对齐 Pointers-BOX v2.6.0 形态：平台分流——侧栏/顶栏隐藏，改悬浮胶囊底栏；
+   各页单列化；触点 ≥44px；触摸高亮清理。 */
+
+/* 触摸清理（Android WebView） */
+.platform-android * {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.platform-android *:focus {
+    outline: none !important;
+}
+
+/* 顶栏与侧栏退场 */
+.platform-android .titlebar,
+.platform-android .sidebar {
+    display: none !important;
+}
+
+.platform-android .pages {
+    padding-top: 0;
+    padding-bottom: 88px;
+}
+
+/* ── 悬浮胶囊底栏（照 BottomNav：blur(26px) saturate(155%) + 发丝边 + accent 指示条） ── */
+.platform-android .bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    max-width: 640px;
+    margin: 0 auto;
+    padding-top: 6px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+}
+
+.platform-android .bn-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    padding: 6px 4px;
+    min-height: 44px;
+    color: var(--nav-color, rgba(240, 236, 255, 0.45));
+    font-size: 10px;
+    font-family: inherit;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.platform-android .bn-item svg {
+    width: 20px;
+    height: 20px;
+}
+
+.platform-android .bn-item.active {
+    color: var(--lgv-accent, var(--highlight-color));
+}
+
+.platform-android .bn-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--lgv-accent, var(--highlight-color));
+    box-shadow: 0 0 12px var(--lgv-accent-soft, rgba(139, 48, 214, 0.35));
+}
+
+.platform-android .bn-item:active svg {
+    transform: scale(0.88);
+    transition: transform 0.12s ease;
+}
+
+/* ── 解析&浏览器页：控制行两行重排 ── */
+.platform-android .parse-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px 6px;
+}
+
+.platform-android .parse-controls {
+    display: flex;
+    width: calc(100% - 54px);
+    gap: 8px;
+}
+
+.platform-android .parse-controls .parse-select {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+}
+
+.platform-android #parse-button {
+    flex-shrink: 0;
+    height: 44px;
+    min-width: 96px;
+}
+
+.platform-android .navsite-controls {
+    width: 100%;
+}
+
+.platform-android .navsite-controls .parse-select {
+    flex: 1;
+    height: 44px;
+}
+
+.platform-android .parse-bar-right {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    margin: 0;
+}
+
+.platform-android .parse-bar {
+    position: relative;
+}
+
+.platform-android .quick-mode-toggle,
+.platform-android .compact-action-button {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* ── 本地页 / 我的影视：单列化 ── */
+.platform-android .page-head {
+    padding: 12px 14px 8px;
+}
+
+.platform-android .page-title {
+    font-size: 18px;
+}
+
+.platform-android .page-actions .toolbar-action-btn,
+.platform-android .page-actions .nav-button {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.platform-android .local-dir-list {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0 12px;
+    gap: 8px;
+}
+
+.platform-android .local-dir-list .local-dir-item {
+    flex-shrink: 0;
+    max-width: 46%;
+}
+
+.platform-android .local-file-list .local-file-item,
+.platform-android .local-file-list>* {
+    width: 100% !important;
+    max-width: 100%;
+    min-height: 52px;
+}
+
+.platform-android .library-layout {
+    flex-direction: column;
+}
+
+.platform-android .lib-list {
+    display: flex !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    max-height: none;
+    padding: 0 12px;
+    gap: 8px;
+}
+
+.platform-android .lib-list>* {
+    flex-shrink: 0;
+}
+
+.platform-android .lib-detail {
+    width: 100%;
+    border-left: none;
+}
+
+/* ── 设置页：单列 + 触点 ── */
+.platform-android .settings-cards {
+    padding: 12px 12px 20px;
+    gap: 12px;
+}
+
+.platform-android .settings-card {
+    padding: 14px 14px 16px;
+}
+
+.platform-android .settings-card .info-row {
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.platform-android .parse-select,
+.platform-android .field-input,
+.platform-android select,
+.platform-android input[type="text"],
+.platform-android input[type="number"],
+.platform-android textarea {
+    min-height: 44px;
+    font-size: 15px;
+}
+
+.platform-android .config-editor-wrapper textarea {
+    min-height: 120px;
+    font-size: 14px;
+}
+
+.platform-android .check-label {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+}
+
+/* ── 用户卡片（设置页置顶，同 Pointers-BOX 形态） ── */
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    background: none;
+    border: 1px solid var(--lgv-g-border, rgba(255, 255, 255, 0.18));
+    cursor: pointer;
+    text-align: left;
+    color: var(--text-color);
+    font-family: inherit;
+}
+
+.user-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--lgv-nav-active, rgba(255, 255, 255, 0.10));
+}
+
+.user-avatar.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--lgv-accent, var(--highlight-color));
+}
+
+.user-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.user-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: var(--lgv-nav-active, rgba(255, 255, 255, 0.10));
+    box-shadow: inset 0 0 0 1px var(--lgv-nav-active-ring, rgba(255, 255, 255, 0.22));
+    color: var(--lgv-accent, var(--highlight-color));
+    flex-shrink: 0;
+}
+
+.user-status {
+    font-size: 12px;
+    color: var(--text-secondary-color);
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── 弹窗移动化 ── */
+.platform-android .modal-overlay {
+    padding: 16px;
+}
+
+.platform-android .modal-content {
+    max-width: 100%;
+    max-height: 86vh;
+    overflow-y: auto;
+}
+
+.platform-android .modal-button {
+    min-height: 44px;
+}
+
+/* ── 播放器浮层触点 ── */
+.platform-android .pc-btn {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.platform-android .pc-select {
+    min-height: 40px;
+}
+
+/* motion-lite 与 reduced-motion：光泽带停扫（liquid-glass.css 的 ::before） */
+.motion-lite .glass-card::before {
+    animation: none;
+}
+
+/* ── v2 通用控件：Switch / 强调色行 / 激活步进 ── */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: var(--lgv-nav-active, rgba(255, 255, 255, 0.10));
+    box-shadow: inset 0 0 0 1px var(--lgv-nav-active-ring, rgba(255, 255, 255, 0.22));
+    transition: background 0.2s ease;
+    cursor: pointer;
+}
+
+.switch-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--text-color, #fff);
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.switch input:checked+.switch-track {
+    background: var(--lgv-accent, var(--highlight-color));
+}
+
+.switch input:checked+.switch-track::after {
+    transform: translateX(18px);
+}
+
+.accent-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.accent-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.accent-dot.active {
+    border-color: var(--text-color, #fff);
+    box-shadow: 0 0 0 2px var(--lgv-nav-active-ring, rgba(255, 255, 255, 0.22));
+}
+
+.accent-input {
+    width: 40px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.dev-steps {
+    font-size: 12px;
+    color: var(--lgv-accent, var(--highlight-color));
+    margin-bottom: 10px;
+}
+
+.user-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.user-edit-row .user-avatar {
+    width: 64px;
+    height: 64px;
+}
+
+/* Android 浏览器页引导卡（裸 glass-card 自带内边距） */
+#mobile-browser-guide {
+    margin: 10px 12px;
+    padding: 16px;
+    border-radius: 16px;
+}
+
+#mobile-browser-guide .card-title {
+    margin-bottom: 10px;
+}
+
+#mobile-browser-guide .card-body {
+    font-size: 13.5px;
+    line-height: 1.75;
+    gap: 8px;
 }

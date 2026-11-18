@@ -30,6 +30,8 @@ contextBridge.exposeInMainWorld('voidAPI', {
 
   // --- 其它 ---
   getVersion: () => ipcRenderer.invoke('get-version'),
+  // 头像选择（本地用户卡片）：桌面=图片选择对话框返回路径；Android 无此方法（渲染层判空提示不支持）
+  pickAvatar: () => ipcRenderer.invoke('avatar:pick'),
   openExternalLink: (url) => ipcRenderer.send('open-external-link', url),
 
   // --- 浏览器会话（webview 内存 session 重置）---

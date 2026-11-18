@@ -77,8 +77,11 @@ function writeStore(name, data) {
 // 默认设置（解析接口保留原 15 个；影视导航按维护者要求默认清空）
 const DEFAULT_SETTINGS = {
   localDirs: [],
-  themeId: 'xingyu',
-  customThemes: [],
+  theme: 'dark',
+  themeAccent: '#8b30d6',
+  localUser: {},
+  devMode: false,
+  autoCheckUpdate: false,
   player: { mode: 'overlay', autoNext: true, rememberPos: true },
   browser: { sleepMinutes: 0, startUrl: 'https://v.qq.com' },
   apiList: [
@@ -463,6 +466,16 @@ ipcMain.handle('dialog:open-dirs', async () => {
 });
 
 ipcMain.handle('get-version', () => app.getVersion());
+
+// 头像选择（本地用户卡片）：返回所选图片路径，渲染层压缩为 dataURL；取消返回 ''
+ipcMain.handle('avatar:pick', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: '选择头像图片',
+    properties: ['openFile'],
+    filters: [{ name: '图片', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'] }],
+  });
+  return result.canceled ? '' : result.filePaths[0];
+});
 
 // --- 播放器窗口 ---
 ipcMain.on('player:open-window', (event, payload) => openPlayerWindow(payload));

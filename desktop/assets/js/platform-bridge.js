@@ -49,6 +49,8 @@
 
     // --- 其它 ---
     getVersion: () => call('getVersion'),
+    // Android 暂不支持头像自传：恒空串（设置页判空提示「当前平台不支持」）
+    pickAvatar: () => call('pickAvatar'),
     openExternalLink: (url) => call('openExternalLink', url),
 
     // --- 浏览器会话（原生侧清 Cookie + 重置标签）---
@@ -67,7 +69,11 @@
     onUpdateEvent: (cb) => listen('updateEvent', cb),
   };
 
-  // 首启恢复页面：桌面启动后经 show-window 发 init-page('browser')，Android 等价在脚本装载后补发
+  // 首启恢复页面：桌面启动后经 show-window 发 init-page('browser')。
+  // 注意时序：renderer.js 在 DOMContentLoaded 才注册回调，此处必须等 load+一拍，
+  // 否则回调还没注册事件就发丢了（冒烟实测：底栏激活态丢失）。
   let initPageCb = null;
-  setTimeout(() => { if (initPageCb) { const cb = initPageCb; initPageCb = null; cb('browser'); } }, 0);
+  window.addEventListener('load', () => {
+    setTimeout(() => { if (initPageCb) { const cb = initPageCb; initPageCb = null; cb('browser'); } }, 80);
+  });
 })();

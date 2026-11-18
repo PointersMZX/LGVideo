@@ -57,7 +57,14 @@ public class VoidBridgePlugin extends Plugin {
 
     private static void resolveJson(PluginCall call, Object value) {
         final JSObject ret = new JSObject();
-        ret.put("data", value == null ? "null" : value.toString());
+        if (value == null || value == JSONObject.NULL) {
+            ret.put("data", "null");
+        } else if (value instanceof String) {
+            // 字符串必须 JSON 编码（quote 加引号转义），否则 "1.2.0" 这类值在 JS 端 JSON.parse 抛错
+            ret.put("data", JSONObject.quote(value.toString()));
+        } else {
+            ret.put("data", value.toString());
+        }
         call.resolve(ret);
     }
 
@@ -267,6 +274,12 @@ public class VoidBridgePlugin extends Plugin {
         resolveJson(call, versionName());
     }
 
+    /** 头像选择：Android 暂不支持头像自传，恒返回空串（设置页提示文案） */
+    @PluginMethod
+    public void pickAvatar(PluginCall call) {
+        resolveJson(call, "");
+    }
+
     private String versionName() {
         try {
             return getContext().getPackageManager()
@@ -387,9 +400,8 @@ public class VoidBridgePlugin extends Plugin {
     // ───────────────────────── 工具 ─────────────────────────
 
     private String readUpdateChannel() {
-        final JSONObject s = store.readSettings();
-        final String ch = s.optString("updateChannel", "github");
-        return ch.isEmpty() ? "github" : ch;
+        // Android 渠道固定 GitHub（与 Pointers-BOX v2.6.0 一致；网盘只做手动下载入口）
+        return "github";
     }
 
     private static JSONObject errEvent(String message) {
