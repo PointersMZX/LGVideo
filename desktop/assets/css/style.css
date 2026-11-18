@@ -2041,3 +2041,12 @@ input[type="color"] {
         transition-duration: 0.01s !important;
     }
 }
+
+/* ---- Android 壳适配（platform-android 由 platform-bridge.js 注入）----
+   浏览/窗口类桌面专属控件隐藏：浏览与解析动作改由原生 BrowserActivity 承载 */
+.platform-android .window-controls,
+.platform-android #tab-strip,
+.platform-android .browser-toolbar,
+.platform-android #webview-stack {
+    display: none !important;
+}

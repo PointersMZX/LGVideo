@@ -1,0 +1,16 @@
+// GFW 规避：把 aliyun maven 镜像注入所有模块的仓库（含 node_modules 下的
+// capacitor-android 等生成工程），网络不可达时让依赖改走国内镜像。
+// 用法：gradle assembleRelease -I mirror-init.gradle
+// 不修改任何 node_modules / 生成文件；仓库顺序靠前，优先命中镜像。
+def aliyunRepos = { RepositoryHandler rh ->
+    rh.maven { url 'https://maven.aliyun.com/repository/public' }
+    rh.maven { url 'https://maven.aliyun.com/repository/google' }
+    rh.maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+}
+
+allprojects {
+    buildscript {
+        repositories { aliyunRepos(delegate) }
+    }
+    repositories { aliyunRepos(delegate) }
+}

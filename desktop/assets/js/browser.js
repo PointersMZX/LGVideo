@@ -3,6 +3,10 @@
 // 会话：共享内存 session xvideo-mem（主进程 will-attach-webview 强制）；标签休眠可配；重置会话清空登录态
 ;(function initBrowser() {
 
+  // Android 壳内（platform-bridge.js 注入的 voidAPI 带 openBrowser）：webview 标签不可用，
+  // 浏览动作全部路由到原生 BrowserActivity（多标签/UA 伪装/解析/全屏视频）
+  const NATIVE_BROWSER = typeof window.voidAPI === 'object' && typeof window.voidAPI.openBrowser === 'function';
+
   const $ = (id) => document.getElementById(id);
   const tabStrip = $('tab-strip');
   const webviewStack = $('webview-stack');
@@ -282,6 +286,20 @@
     } catch (e) {}
   }
 
+  // ---------- Android：唤起原生浏览器 ----------
+  // 站点 CSS 串由 JS 组好传入（保持与桌面单一来源）；接口列表随行传递供原生解析按钮使用
+  function openNativeBrowser(opts) {
+    if (!NATIVE_BROWSER) return;
+    const css = AV_VARS[opts.mode || mode] + '\n' + VIEW_SCROLLBAR_CSS + '\n' + NUISANCE_CSS;
+    window.voidAPI.openBrowser(Object.assign({
+      mode: mode,
+      url: settings.browser.startUrl || 'https://v.qq.com',
+      apiList: settings.apiList || [],
+      apiValue: (settings.apiList.find(a => a.value === apiSelect.value) || settings.apiList[0] || {}).value || '',
+      css: css,
+    }, opts));
+  }
+
   // ---------- 标签条渲染 ----------
   function renderTabs() {
     // 移除旧 pill（保留 + 按钮）
@@ -390,6 +408,12 @@
     const api = settings.apiList.find(a => a.value === apiSelect.value) || settings.apiList[0];
     const finalUrl = (api ? api.value : '') + u;
     showLoading();
+    if (NATIVE_BROWSER) {
+      youkuPage.style.display = 'none';
+      openNativeBrowser({ url: finalUrl, parseDirect: true });
+      hideLoading();
+      return;
+    }
     const wv = webviewEls.get(activeId);
     if (wv) { try { wv.loadURL(finalUrl); } catch (e) {} youkuPage.style.display = 'none'; }
     setTimeout(hideLoading, 1500);
@@ -424,11 +448,17 @@
         return;
       }
       navsiteSelect.value = settings.dramaSites[0].value;
-      navigate(settings.dramaSites[0].value, true);
+      if (NATIVE_BROWSER) openNativeBrowser({ url: settings.dramaSites[0].value, mode: 'nav' });
+      else navigate(settings.dramaSites[0].value, true);
     } else {
       const home = platformSelect.value || 'https://v.qq.com';
-      navigate(home === 'https://www.youku.com' ? 'https://www.youku.com' : home, true);
-      if (home === 'https://www.youku.com') enterYoukuPage();
+      if (NATIVE_BROWSER) {
+        // Android：模式切回解析只重排控制行，浏览动作由用户选择平台/导航站点时唤起
+        if (home === 'https://www.youku.com') enterYoukuPage();
+      } else {
+        navigate(home === 'https://www.youku.com' ? 'https://www.youku.com' : home, true);
+        if (home === 'https://www.youku.com') enterYoukuPage();
+      }
     }
     setModeClass();
   }
@@ -467,7 +497,7 @@
       populateSelect(apiSelect, settings.apiList);
       populateSelect(navsiteSelect, settings.dramaSites.length ? settings.dramaSites : [{ value: '', label: '（未配置）' }]);
 
-      // 工具栏
+      // 工具栏 / 标签条（webview 类交互，Android 上这些 DOM 已隐藏，绑定为桌面专属）
       goButton.addEventListener('click', go);
       urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
       backBtn.addEventListener('click', () => { const wv = webviewEls.get(activeId); if (wv && wv.canGoBack()) wv.goBack(); });
@@ -478,20 +508,29 @@
         if (ok) resetSession();
       });
 
-      // 标签条 + 按钮
-      const newBtn = document.createElement('button');
-      newBtn.className = 'tab-new';
-      newBtn.textContent = '+';
-      newBtn.title = '新建标签';
-      newBtn.addEventListener('click', () => newTab());
-      tabStrip.appendChild(newBtn);
+      if (!NATIVE_BROWSER) {
+        // 标签条 + 按钮
+        const newBtn = document.createElement('button');
+        newBtn.className = 'tab-new';
+        newBtn.textContent = '+';
+        newBtn.title = '新建标签';
+        newBtn.addEventListener('click', () => newTab());
+        tabStrip.appendChild(newBtn);
 
-      // 解析选项
+        // 休眠 tick
+        sleepTimer = setInterval(sleepTick, 60000);
+
+        // 启动标签
+        newTab();
+      }
+
+      // 解析选项（桌面 = 页内 webview 导航；Android = 唤起原生浏览器，解析在其工具栏触发）
       platformSelect.addEventListener('change', () => {
         isCurrentlyParsing = false;
         currentYoukuUrl = '';
         const sel = platformSelect.value;
         if (sel === 'https://www.youku.com') enterYoukuPage();
+        else if (NATIVE_BROWSER) openNativeBrowser({ url: sel });
         else navigate(sel, true);
       });
       apiSelect.addEventListener('change', () => {
@@ -500,6 +539,11 @@
       parseButton.addEventListener('click', () => {
         showLoading();
         if (platformSelect.value === 'https://www.youku.com') parseYoukuUrl();
+        else if (NATIVE_BROWSER) {
+          // 主页面无当前视频 URL，携所选平台与接口唤起原生浏览器，由其工具栏「解析」触发
+          openNativeBrowser({ url: platformSelect.value || settings.browser.startUrl || 'https://v.qq.com' });
+          hideLoading();
+        }
         else {
           isCurrentlyParsing = true;
           requestAnimationFrame(() => triggerParse());
@@ -507,17 +551,14 @@
       });
       navsiteSelect.addEventListener('change', (e) => {
         const v = e.target.value;
-        if (v) navigate(v, true);
+        if (!v) return;
+        if (NATIVE_BROWSER) openNativeBrowser({ url: v, mode: 'nav' });
+        else navigate(v, true);
       });
       modeToggle.addEventListener('click', () => switchMode(mode === 'parse' ? 'nav' : 'parse'));
 
       youkuUrlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') parseYoukuUrl(); });
 
-      // 休眠 tick
-      sleepTimer = setInterval(sleepTick, 60000);
-
-      // 启动标签
-      newTab();
       setModeClass();
     },
 
@@ -531,12 +572,14 @@
     },
 
     openUrl(url) {
-      // 我的影视 URL 集数 / 其它页面跳转：新标签打开
+      // 我的影视 URL 集数 / 其它页面跳转：桌面新标签打开；Android 唤起原生浏览器新标签
+      if (NATIVE_BROWSER) { openNativeBrowser({ url, newTab: true }); return; }
       newTab(url);
       window.XVApp.switchPage('browser');
     },
 
     loadInActive(url) {
+      if (NATIVE_BROWSER) { openNativeBrowser({ url, newTab: true }); return; }
       const wv = webviewEls.get(activeId);
       if (wv) { try { wv.loadURL(url); } catch (e) {} }
     },

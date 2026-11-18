@@ -1,0 +1,13 @@
+{
+  "appId": "com.lg.video",
+  "appName": "LG Video",
+  "webDir": "android-web",
+  "backgroundColor": "#0d0716",
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

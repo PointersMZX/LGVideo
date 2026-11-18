@@ -56,6 +56,8 @@
   const fileSrc = (p) => {
     const s = String(p).replace(/\\/g, '/');
     if (/^[a-zA-Z]:/.test(s)) return 'file:///' + s;
+    // 绝对 http(s) 地址直通（Android 壳的本地媒体流为 http://127.0.0.1）
+    if (/^https?:\/\//i.test(s)) return s;
     if (s.startsWith('//')) return s;
     return 'file://' + s;
   };

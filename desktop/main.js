@@ -42,7 +42,7 @@ if (isDev) {
 }
 
 // --- Application Setup ---
-// 打包版：userData 放安装目录旁（与 exe 同级，可写）；dev 版：app/userData
+// 打包版：userData 放安装目录旁（与 exe 同级，可写）；dev 版：desktop/userData
 // 注意：不能指进 asar 内部（app.asar/userData 在 Windows 上建不出目录，
 // 单实例锁 / 持久层会静默失败）
 const dataRoot = app.isPackaged ? path.dirname(process.execPath) : __dirname;
