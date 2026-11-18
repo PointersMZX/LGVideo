@@ -1,6 +1,13 @@
 node_modules/
 release/
 .build-tmp/
-app/userData/
+desktop/userData/
 *.log
 .DS_Store
+android-web/
+android/.gradle/
+android/local.properties
+android/app/lgvideo-release.keystore
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/

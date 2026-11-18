@@ -1,5 +1,5 @@
 // 双版本打包脚本：win-64（Electron 33，Win10/11）+ win7-64（Electron 22，Win7 兼容）
-// 基底 = 解包自 AudioVisual 1.0.9 的 app/ 目录（预打包 bundle，无需 renderer 构建步骤）
+// 基底 = desktop/ 目录（预打包 bundle，无需 renderer 构建步骤）
 // 两个完整安装目录直接输出到 release/（win-64 / win7-64），NSIS 安装程序由维护者自行制作
 // 用法：node scripts/build-win.mjs
 import { spawnSync } from 'node:child_process'

@@ -6,11 +6,11 @@ copyright: Copyright © 2026 LG Video
 directories:
   output: release
   buildResources: build
-  # 标准 app 目录模式：打包源 = app/（其内 package.json 的 main 字段为运行时入口）
-  app: app
+  # 标准 app 目录模式：打包源 = desktop/（其内 package.json 的 main 字段为运行时入口）
+  app: desktop
 
 asar: true
-# app/ 目录内无 native 模块（纯 JS 依赖已全量移除），跳过 @electron/rebuild
+# desktop/ 目录内无 native 模块（纯 JS 依赖已全量移除），跳过 @electron/rebuild
 npmRebuild: false
 
 # userData/ 是 dev 期运行时数据（主进程 setPath 落在 app 目录旁），严禁进包
