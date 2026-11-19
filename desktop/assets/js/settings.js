@@ -304,8 +304,6 @@
 
   // ---------- 更新检查（自动检测 + 渠道固定 GitHub + 网盘手动入口） ----------
   function initUpdate() {
-    // 旧档 gitee 渠道值迁移：固定回落 GitHub（Gitee 渠道已移除）
-    if (settings.updateChannel === 'gitee') settings.updateChannel = 'github';
     // Android：显示网盘手动按钮（检测渠道固定 GitHub）
     if (IS_ANDROID) $('netdisk-update-btn').hidden = false;
 

@@ -102,7 +102,7 @@ const DEFAULT_SETTINGS = {
     { value: "https://jx.hls.one/?url=", label: "HLS解析" },
   ],
   dramaSites: [], // 第三方导航：默认清空（维护者要求）
-  updateChannel: 'github', // 固定 GitHub 渠道（Gitee 渠道已移除；旧档 'gitee' 值经下方兜底自动回落 github）
+  updateChannel: 'github', // 固定 GitHub 渠道（Gitee 已移除；异常值经下方兜底回落 github）
   agreedPact: false,
 };
 
