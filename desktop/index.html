@@ -425,19 +425,12 @@
                                     <span class="switch-track"></span>
                                 </label>
                             </div>
-                            <div class="info-row" id="update-channel-row">
-                                <span class="info-label">更新渠道</span>
-                                <select id="update-channel-select" class="parse-select">
-                                    <option value="github">全球官方（GitHub）</option>
-                                    <option value="gitee">国内镜像（Gitee）</option>
-                                </select>
-                            </div>
                             <div id="update-area" class="update-area"></div>
                             <div class="card-actions">
                                 <button id="update-check-btn" class="action-button">检查更新</button>
                                 <button id="netdisk-update-btn" class="secondary-button" hidden>网盘更新</button>
                             </div>
-                            <div class="about-text small">「网盘更新」打开网盘分享页手动下载最新安装包，检测渠道不受影响。</div>
+                            <div class="about-text small">「网盘更新」打开网盘分享页手动下载最新安装包，检测渠道固定为 GitHub。</div>
                         </div>
                     </section>
 
@@ -619,29 +612,6 @@
             </div>
             <div class="modal-footer">
                 <button id="pact-ok" class="modal-button primary">好的</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 更新渠道选择弹窗（首次启动强制选择） -->
-    <div id="channel-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content glass-card channel-content">
-            <h2>选择更新渠道</h2>
-            <p class="channel-tip">用于检查与应用内更新；之后可随时在「设置 → 更新检查」中更改。</p>
-            <div class="channel-options" id="channel-options">
-                <div class="channel-option" data-channel="gitee">
-                    <div class="co-icon">🧭</div>
-                    <div class="co-name">国内镜像（Gitee）</div>
-                    <div class="co-desc">国内访问速度快、不受 GitHub 限流影响；更新包与官方一致。</div>
-                </div>
-                <div class="channel-option" data-channel="github">
-                    <div class="co-icon">🌐</div>
-                    <div class="co-name">全球官方（GitHub）</div>
-                    <div class="co-desc">版本发布的源头；适合海外网络或希望第一时间获取更新。</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="channel-confirm" class="modal-button primary" disabled>确定</button>
             </div>
         </div>
     </div>

@@ -40,7 +40,7 @@ contextBridge.exposeInMainWorld('voidAPI', {
   // --- 播放器独立窗口 ---
   openPlayerWindow: (payload) => ipcRenderer.send('player:open-window', payload),
 
-  // --- 双渠道更新（GitHub 官方 / Gitee 镜像；主进程手动 API 检查 + 流式下载 + 唤起安装器）---
+  // --- 更新检查（固定 GitHub 渠道；主进程手动 API 检查 + 流式下载 + 唤起安装器）---
   checkForUpdates: () => ipcRenderer.invoke('update:check'),
   downloadUpdate: () => ipcRenderer.invoke('update:download'),
   installUpdate: () => ipcRenderer.invoke('update:install'),

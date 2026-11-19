@@ -102,7 +102,7 @@ const DEFAULT_SETTINGS = {
     { value: "https://jx.hls.one/?url=", label: "HLS解析" },
   ],
   dramaSites: [], // 第三方导航：默认清空（维护者要求）
-  updateChannel: '', // '' = 尚未选择（首启弹窗询问）；'github' 全球官方 / 'gitee' 国内镜像
+  updateChannel: 'github', // 固定 GitHub 渠道（Gitee 渠道已移除；旧档 'gitee' 值经下方兜底自动回落 github）
   agreedPact: false,
 };
 
@@ -567,8 +567,8 @@ if (!app.requestSingleInstanceLock()) {
   });
 }
 
-// --- 双渠道更新（照 Pointers-BOX 设计移植：GitHub/Gitee 均为手动 API 检查 + 流式下载安装包 + 唤起安装器）---
-// 用户发布流程：把 NSIS 安装器上传到两个 Release 页即可（GitHub 官方 + Gitee 国内镜像），无需 latest.yml
+// --- 更新检查（单渠道 GitHub；手动 API 检查 + 流式下载安装包 + 唤起安装器）---
+// 用户发布流程：把 NSIS 安装器上传到 GitHub Release 页即可，无需 latest.yml
 const { net } = require('electron');
 
 const UPDATE_CHANNELS = {
@@ -577,12 +577,6 @@ const UPDATE_CHANNELS = {
     api: 'https://api.github.com/repos/PointersMZX/LGVideo/releases/latest',
     page: 'https://github.com/PointersMZX/LGVideo/releases',
     headers: { 'User-Agent': 'LGVideo-Updater', 'Accept': 'application/vnd.github+json' },
-  },
-  gitee: {
-    label: '国内镜像（Gitee）',
-    api: 'https://gitee.com/api/v5/repos/PointersMZX/LGVideo/releases/latest',
-    page: 'https://gitee.com/PointersMZX/LGVideo/releases',
-    headers: { 'User-Agent': 'LGVideo-Updater' },
   },
 };
 

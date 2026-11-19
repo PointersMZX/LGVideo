@@ -302,20 +302,12 @@
     remember.addEventListener('change', savePlayer);
   }
 
-  // ---------- 更新检查（自动检测 + 渠道 + 网盘手动入口） ----------
+  // ---------- 更新检查（自动检测 + 渠道固定 GitHub + 网盘手动入口） ----------
   function initUpdate() {
-    // Android：渠道固定 GitHub（旧档 netdisk 迁回由 themes/默认值层处理），显示网盘手动按钮
-    const channelSel = $('update-channel-select');
-    if (IS_ANDROID) {
-      $('update-channel-row').hidden = true;
-      $('netdisk-update-btn').hidden = false;
-    } else {
-      channelSel.value = settings.updateChannel || 'github';
-      channelSel.addEventListener('change', async () => {
-        await save({ updateChannel: channelSel.value });
-        showToast(`更新渠道已切换：${channelSel.value === 'gitee' ? '国内镜像（Gitee）' : '全球官方（GitHub）'}`, 'success');
-      });
-    }
+    // 旧档 gitee 渠道值迁移：固定回落 GitHub（Gitee 渠道已移除）
+    if (settings.updateChannel === 'gitee') settings.updateChannel = 'github';
+    // Android：显示网盘手动按钮（检测渠道固定 GitHub）
+    if (IS_ANDROID) $('netdisk-update-btn').hidden = false;
 
     const autoSwitch = $('update-auto-check');
     autoSwitch.checked = !!settings.autoCheckUpdate;
@@ -379,35 +371,6 @@
         }, 120);
       });
     }
-
-    // 首启强制选择渠道（仅桌面；Android 渠道固定 GitHub）
-    if (!IS_ANDROID && !settings.updateChannel) {
-      openChannelModal();
-    }
-  }
-
-  function openChannelModal() {
-    const modal = $('channel-modal');
-    const opts = modal.querySelectorAll('.channel-option');
-    const confirmBtn = $('channel-confirm');
-    let chosen = '';
-    modal.style.display = 'flex';
-    opts.forEach(o => {
-      o.addEventListener('click', () => {
-        opts.forEach(x => x.classList.remove('selected'));
-        o.classList.add('selected');
-        chosen = o.dataset.channel;
-        confirmBtn.disabled = false;
-      });
-    });
-    confirmBtn.addEventListener('click', async () => {
-      if (!chosen) return;
-      modal.style.display = 'none';
-      await save({ updateChannel: chosen });
-      const sel = $('update-channel-select');
-      if (sel) sel.value = chosen;
-      showToast(`更新渠道：${chosen === 'gitee' ? '国内镜像（Gitee）' : '全球官方（GitHub）'}`, 'success');
-    }, { once: true });
   }
 
   // ---------- 开发者模式（置底；开=两步验证，关=直写） ----------
