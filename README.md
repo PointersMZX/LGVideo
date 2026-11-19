@@ -39,7 +39,6 @@
 
 - 官网：https://lgvideo.pointers-box.cc.cd
 - GitHub：https://github.com/PointersMZX/LGVideo
-- Gitee：https://gitee.com/PointersMZX/LGVideo
 
 发现问题或有建议，欢迎在仓库 Issues 中提交。
 
