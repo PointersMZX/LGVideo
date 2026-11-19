@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('#bottomnav .bn-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
     // class 切换不触发 MutationObserver：手动重扫让新页玻璃卡被折射层接管
     if (window.LGVGlass) window.LGVGlass.rescan();
+    // 底栏指示条吸附到新页
+    if (IS_ANDROID && window.__bnIndicatorSync) window.__bnIndicatorSync(true);
   }
   window.XVApp.switchPage = switchPage;
 
@@ -65,7 +67,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (IS_ANDROID) {
     const nav = $('bottomnav');
     nav.hidden = false;
-    nav.innerHTML = NAV_ITEMS.map((item) => `
+    nav.innerHTML = `
+      <span id="bn-indicator"></span>` + NAV_ITEMS.map((item) => `
       <button class="bn-item" data-page="${item.page}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.svg}</svg>
@@ -74,6 +77,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     `).join('');
     nav.querySelectorAll('.bn-item').forEach(btn => {
       btn.addEventListener('click', () => switchPage(btn.dataset.page));
+    });
+
+    // ---------- 指示条：左右跟手拖动 + 松手 springEase 吸附（对齐 Pointers-BOX 跟手/预览/吸附） ----------
+    const indicator = $('bn-indicator');
+    const bnItems = () => Array.from(nav.querySelectorAll('.bn-item'));
+    const IND_W = 32;
+    const indicatorLeftFor = (idx) => {
+      const it = bnItems()[idx];
+      return it ? it.offsetLeft + it.offsetWidth / 2 - IND_W / 2 : 0;
+    };
+    const setIndicator = (left, animate) => {
+      const from = parseFloat(indicator.style.left || '0');
+      if (!animate || Number.isNaN(from)) {
+        indicator.style.left = left + 'px';
+        return;
+      }
+      const t0 = performance.now();
+      const ease = window.LGVGlass ? window.LGVGlass.springEase : (t) => t;
+      const tick = (now) => {
+        const t = Math.min(1, (now - t0) / 460);
+        indicator.style.left = from + (left - from) * ease(t) + 'px';
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    function currentActivePage() {
+      const act = nav.querySelector('.bn-item.active');
+      return act ? act.dataset.page : 'browser';
+    }
+    window.__bnIndicatorSync = (animate) => {
+      const idx = PAGES.indexOf(currentActivePage());
+      setIndicator(idx >= 0 ? indicatorLeftFor(idx) : indicatorLeftFor(0), animate);
+    };
+    // 初始化位置
+    requestAnimationFrame(() => window.__bnIndicatorSync(false));
+
+    // 拖动跟手：按下跟移（钳制在栏内），松手吸附最近项并切换页
+    let dragX = 0, dragBaseLeft = 0, dragMoved = false;
+    const clamp = (v) => Math.max(4, Math.min(nav.clientWidth - IND_W - 4, v));
+    nav.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button')) { /* tap 走 click；drag 允许从项上开始 */ }
+      dragX = e.clientX;
+      dragBaseLeft = parseFloat(indicator.style.left || '0');
+      dragMoved = false;
+      nav.setPointerCapture(e.pointerId);
+    });
+    nav.addEventListener('pointermove', (e) => {
+      if (e.buttons === 0) return;
+      const dx = e.clientX - dragX;
+      if (Math.abs(dx) > 8) dragMoved = true;
+      if (dragMoved) indicator.style.left = clamp(dragBaseLeft + dx) + 'px';
+    });
+    nav.addEventListener('pointerup', (e) => {
+      if (!dragMoved) return; // tap：bn-item 的 click 原生处理
+      const x = e.clientX - nav.getBoundingClientRect().left;
+      let idx = 0, best = Infinity;
+      bnItems().forEach((it, i) => {
+        const c = it.offsetLeft + it.offsetWidth / 2;
+        const d = Math.abs(x - c);
+        if (d < best) { best = d; idx = i; }
+      });
+      const targetPage = bnItems()[idx].dataset.page;
+      if (targetPage !== currentActivePage()) switchPage(targetPage); // 异页：switchPage 内吸附
+      else window.__bnIndicatorSync(true); // 同页：指示条回弹吸附原位
     });
   }
 
@@ -108,10 +175,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       { selector: '.sidebar', cssVar: '--lgv-sb-backdrop', tail: dark
           ? { blur: 30, saturate: 165, brightness: 1 }
           : { blur: 28, saturate: 150, brightness: 1 } },
-      // 底栏（Android）
-      { selector: '.bottom-nav', cssVar: '--lgv-bn-backdrop', tail: dark
-          ? { blur: 26, saturate: 155, brightness: 1 }
-          : { blur: 24, saturate: 145, brightness: 1 } },
+      // 底栏（Android）：悬浮小件加大折射强度（refMult）+ 更厚磨砂，玻璃感更足
+      { selector: '.bottom-nav', cssVar: '--lgv-bn-backdrop', refMult: 1.7, tail: dark
+          ? { blur: 30, saturate: 175, brightness: 1.06 }
+          : { blur: 28, saturate: 160, brightness: 1 } },
     ]);
   }
   applyGlass();

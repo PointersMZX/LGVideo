@@ -116,9 +116,13 @@ public class BrowserActivity extends Activity {
             session.activeIndex = session.tabs.size() - 1;
             mountTab(session.activeIndex, true);
         } else {
+            // resume 语义 = 恢复既有会话：不跳页，保留当前标签/页内状态直接回到前台；
             // 平台选择/导航站点语义 = 当前标签换页（与桌面 navigate 一致）
-            final String url = firstUrl();
-            loadInActive(url);
+            final boolean resume = session.lastPayload != null && session.lastPayload.optBoolean("resume", false);
+            if (!resume) {
+                final String url = firstUrl();
+                loadInActive(url);
+            }
         }
         if (session.tabs.size() != tabsBefore || !isFinishing()) renderTabs();
     }
@@ -209,6 +213,8 @@ public class BrowserActivity extends Activity {
         bar.addView(addressBar, addrParams);
 
         mkBtn(bar, "解析", v -> triggerParse(), chipParams);
+        // 切出：临时离开回主界面（BrowserSession 保留标签与页内状态，主界面「打开浏览器」恢复）
+        mkBtn(bar, "切出", v -> finish(), chipParams);
         column.addView(bar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 

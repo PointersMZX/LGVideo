@@ -524,15 +524,13 @@
         newTab();
       }
 
-      // Android：引导卡显示（原生浏览器承载浏览与解析）
+      // Android：浏览器默认即开（恢复既有会话或打开起始页，无引导卡）；控制行「打开浏览器」随时恢复
       if (NATIVE_BROWSER) {
-        const guide = document.getElementById('mobile-browser-guide');
-        if (guide) {
-          guide.hidden = false;
-          const api = settings.apiList.find(a => a.value === apiSelect.value) || settings.apiList[0];
-          const nameEl = document.getElementById('guide-api-name');
-          if (nameEl && api) nameEl.textContent = api.label;
-        }
+        openNativeBrowser({ resume: true, url: settings.browser.startUrl || 'https://v.qq.com' });
+        const openBtn = document.getElementById('android-browser-open');
+        if (openBtn) openBtn.addEventListener('click', () => {
+          openNativeBrowser({ resume: true, url: settings.browser.startUrl || 'https://v.qq.com' });
+        });
       }
 
       // 解析选项（桌面 = 页内 webview 导航；Android = 唤起原生浏览器，解析在其工具栏触发）
@@ -551,8 +549,8 @@
         showLoading();
         if (platformSelect.value === 'https://www.youku.com') parseYoukuUrl();
         else if (NATIVE_BROWSER) {
-          // 主页面无当前视频 URL，携所选平台与接口唤起原生浏览器，由其工具栏「解析」触发
-          openNativeBrowser({ url: platformSelect.value || settings.browser.startUrl || 'https://v.qq.com' });
+          // 已有会话不跳页（保留当前页/状态）；无会话才携平台与接口打开
+          openNativeBrowser({ resume: true, url: platformSelect.value || settings.browser.startUrl || 'https://v.qq.com' });
           hideLoading();
         }
         else {

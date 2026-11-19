@@ -146,11 +146,12 @@
                     <div id="navsite-empty" class="empty-hint drama-only" hidden>
                         暂无导航站点，可前往「设置 → 影视导航管理」添加
                     </div>
-                    <div class="parse-bar-right">
-                        <button id="quick-mode-toggle" class="compact-action-button" data-tooltip="切换模式">
-                            <span class="mode-icon">🌐</span>
-                        </button>
-                    </div>
+                <div class="parse-bar-right">
+                    <button id="android-browser-open" class="action-button compact platform-android-only" type="button">打开浏览器</button>
+                    <button id="quick-mode-toggle" class="compact-action-button" data-tooltip="切换模式">
+                        <span class="mode-icon">🌐</span>
+                    </button>
+                </div>
                 </div>
 
                 <div class="tab-strip" id="tab-strip"></div>
@@ -192,16 +193,6 @@
                 </div>
 
                 <div class="webview-stack" id="webview-stack"></div>
-
-                <!-- Android 引导卡（原生浏览器承载浏览与解析；webview 标签不可用） -->
-                <div id="mobile-browser-guide" class="glass-card" hidden>
-                    <h2 class="card-title">网页解析</h2>
-                    <div class="card-body about-text">
-                        <p>选择上方视频平台（或切换第三方导航站点），将在<b>内置浏览器</b>中打开。</p>
-                        <p>浏览到具体视频页面后，点浏览器工具栏的<b>「解析」</b>按钮即可换源播放；浏览器支持多标签、桌面版 UA 与全屏播放。</p>
-                        <p>当前解析接口：<b id="guide-api-name">—</b>，可在「设置 → 解析接口管理」中更换。</p>
-                    </div>
-                </div>
 
                 <div id="youku-custom-page" class="parsing-only" style="display: none;">
                     <div class="icon-container">
@@ -286,7 +277,7 @@
                         <span id="user-avatar" class="user-avatar placeholder"></span>
                         <span class="user-meta">
                             <span class="user-name-row">
-                                <span class="user-name" id="user-name">LG 用户</span>
+                                <span class="user-name" id="user-name">admin</span>
                                 <span class="user-badge" id="user-dev-badge" hidden>开发者模式</span>
                             </span>
                             <span class="user-status" id="user-status">点击编辑个人资料</span>
@@ -471,8 +462,6 @@
                             </div>
                             <label class="field-label">用户名</label>
                             <input type="text" id="user-username" class="field-input" placeholder="用户名" maxlength="20">
-                            <label class="field-label">状态</label>
-                            <input type="text" id="user-status-input" class="field-input" placeholder="一句话状态" maxlength="30">
                             <label class="field-label">个性签名</label>
                             <textarea id="user-signature" class="field-input" rows="3" placeholder="个性签名（可选）" maxlength="120"></textarea>
                         </div>

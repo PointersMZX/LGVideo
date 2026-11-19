@@ -42,7 +42,7 @@
       // 磨砂三件套
       blur: 24, saturate: 150, brightness: 1.12,
       sidebarBlur: 30, sidebarSaturate: 165,
-      bottomnavBlur: 26, bottomnavSaturate: 155,
+      bottomnavBlur: 30, bottomnavSaturate: 175,
       // 棱线 / 内泛光 / 光泽 / 投影 / 噪点（零染色：hi/lo 恒 transparent）
       edge: 'rgba(255, 255, 255, 0.14)',
       border: 'rgba(255, 255, 255, 0.18)',
@@ -74,7 +74,7 @@
       textMuted: '#6f6888',
       blur: 22, saturate: 140, brightness: 0.94,
       sidebarBlur: 28, sidebarSaturate: 150,
-      bottomnavBlur: 24, bottomnavSaturate: 145,
+      bottomnavBlur: 28, bottomnavSaturate: 160,
       edge: 'rgba(15, 23, 42, 0.14)',
       border: 'rgba(15, 23, 42, 0.16)',
       rimTop: 'rgba(255, 255, 255, 0.95)',

@@ -2002,17 +2002,23 @@ input[type="color"] {
     color: var(--lgv-accent, var(--highlight-color));
 }
 
+/* 静态 ::before 指示条让位给 JS 跟手指示条（#bn-indicator） */
 .platform-android .bn-item.active::before {
-    content: '';
+    display: none;
+}
+
+/* 跟手指示条：renderer.js 拖动跟移 + 松手 springEase 吸附 */
+#bn-indicator {
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     width: 32px;
     height: 3px;
     border-radius: 3px;
     background: var(--lgv-accent, var(--highlight-color));
     box-shadow: 0 0 12px var(--lgv-accent-soft, rgba(139, 48, 214, 0.35));
+    pointer-events: none;
+    z-index: 1;
 }
 
 .platform-android .bn-item:active svg {
@@ -2359,19 +2365,11 @@ input[type="color"] {
     height: 64px;
 }
 
-/* Android 浏览器页引导卡（裸 glass-card 自带内边距） */
-#mobile-browser-guide {
-    margin: 10px 12px;
-    padding: 16px;
-    border-radius: 16px;
+/* 平台专属元素：仅 Android 显示（桌面隐藏） */
+.platform-android-only {
+    display: none !important;
 }
 
-#mobile-browser-guide .card-title {
-    margin-bottom: 10px;
-}
-
-#mobile-browser-guide .card-body {
-    font-size: 13.5px;
-    line-height: 1.75;
-    gap: 8px;
+.platform-android .platform-android-only {
+    display: inline-flex !important;
 }

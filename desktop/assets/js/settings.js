@@ -35,7 +35,6 @@
     if (!out.userId) out.userId = `local_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e4).toString(36)}`;
     if (!out.username) out.username = 'admin';
     out.avatar = typeof out.avatar === 'string' ? out.avatar : '';
-    out.status = typeof out.status === 'string' ? out.status : '';
     out.signature = typeof out.signature === 'string' ? out.signature : '';
     return out;
   }
@@ -48,7 +47,8 @@
     avatarEl.style.backgroundSize = 'cover';
     avatarEl.textContent = u.avatar ? '' : (u.username || 'L').slice(0, 1).toUpperCase();
     $('user-name').textContent = u.username;
-    $('user-status').textContent = u.status || u.signature || '点击编辑个人资料';
+    // 状态位 = 开发者模式 Badge（user-dev-badge），非手填；此槽位显示签名或引导文案
+    $('user-status').textContent = u.signature || '点击编辑个人资料';
     $('user-dev-badge').hidden = !settings.devMode;
   }
 
@@ -59,7 +59,6 @@
     $('user-avatar-edit').style.backgroundSize = 'cover';
     $('user-avatar-edit').textContent = u.avatar ? '' : (u.username || 'L').slice(0, 1).toUpperCase();
     $('user-username').value = u.username;
-    $('user-status-input').value = u.status;
     $('user-signature').value = u.signature;
     $('avatar-hint').textContent = IS_ANDROID ? '当前平台不支持头像自传' : '';
     $('user-avatar-btn').hidden = IS_ANDROID;
@@ -106,11 +105,6 @@
     $('user-username').addEventListener('input', () => {
       clearTimeout(nameTimer);
       nameTimer = setTimeout(() => saveUser({ username: $('user-username').value.trim() || 'admin' }), 400);
-    });
-    let statusTimer = null;
-    $('user-status-input').addEventListener('input', () => {
-      clearTimeout(statusTimer);
-      statusTimer = setTimeout(() => saveUser({ status: $('user-status-input').value }), 400);
     });
     let sigTimer = null;
     $('user-signature').addEventListener('input', () => {

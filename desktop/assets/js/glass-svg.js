@@ -113,7 +113,7 @@
       if (edgeChanged) {
         this.entries.forEach((e) => this.rebuild(e));
       } else if (refChanged) {
-        this.entries.forEach((e) => e.feDisp.setAttribute('scale', String(e.maxScale * params.ref)));
+        this.entries.forEach((e) => e.feDisp.setAttribute('scale', String(this.baseScale(e))));
       }
     }
 
@@ -255,7 +255,13 @@
       feImage.setAttribute('height', String(h));
       feImage.setAttributeNS(XLINK_NS, 'href', canvas.toDataURL());
       entry.maxScale = map.maxScale;
-      entry.feDisp.setAttribute('scale', String(entry.maxScale * this.params.ref));
+      entry.feDisp.setAttribute('scale', String(baseScale(entry)));
+    }
+
+    // 该目标的折射强度 = 全局 ref × 目标 refMult（缺省 1；底栏等小件可加大）
+    baseScale(entry) {
+      const t = this.targets.find((x) => entry.el.matches(x.selector));
+      return entry.maxScale * this.params.ref * ((t && t.refMult) ? t.refMult : 1);
     }
 
     // inline 覆盖该目标的 backdrop 配方：url 滤镜打头 + 目标磨砂尾串（零染色）
@@ -270,7 +276,7 @@
     bindPress(entry) {
       const el = entry.el;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const base = () => entry.maxScale * this.params.ref;
+      const base = () => this.baseScale(entry);
       const down = () => {
         if (entry.pressRAF !== null) cancelAnimationFrame(entry.pressRAF);
         const from = Number(entry.feDisp.getAttribute('scale') || base());

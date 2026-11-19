@@ -83,11 +83,11 @@ execFileSync(`${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\cmd.exe`,
     stdio: 'inherit',
   })
 
-// 5. 产物 → 仓库根 release/（android 单件，按版本改名）
+// 5. 产物 → 仓库根 release/（android 单件；应用名=中文「甘露影视」，文件名同）
 const outputs = join(androidDir, 'app', 'build', 'outputs', 'apk', 'release')
 mkdirSync(outDir, { recursive: true })
 const apk = readdirSync(outputs).filter((f) => f.endsWith('.apk') && !f.endsWith('.idsig'))[0]
 if (!apk) fail(`outputs 目录无 APK：${outputs}`)
-const target = join(outDir, `LGVideo_v${version}_android.apk`)
+const target = join(outDir, `甘露影视_v${version}_android.apk`)
 cpSync(join(outputs, apk), target)
 console.log('[build-android] 完成 →', target)
