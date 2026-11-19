@@ -33,7 +33,7 @@
   function normalizeLocalUser(u) {
     const out = (u && typeof u === 'object') ? { ...u } : {};
     if (!out.userId) out.userId = `local_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e4).toString(36)}`;
-    if (!out.username) out.username = 'LG 用户';
+    if (!out.username) out.username = 'admin';
     out.avatar = typeof out.avatar === 'string' ? out.avatar : '';
     out.status = typeof out.status === 'string' ? out.status : '';
     out.signature = typeof out.signature === 'string' ? out.signature : '';
@@ -105,7 +105,7 @@
     let nameTimer = null;
     $('user-username').addEventListener('input', () => {
       clearTimeout(nameTimer);
-      nameTimer = setTimeout(() => saveUser({ username: $('user-username').value.trim() || 'LG 用户' }), 400);
+      nameTimer = setTimeout(() => saveUser({ username: $('user-username').value.trim() || 'admin' }), 400);
     });
     let statusTimer = null;
     $('user-status-input').addEventListener('input', () => {
@@ -177,7 +177,11 @@
       name.textContent = p.name;
       wrap.appendChild(tile);
       wrap.appendChild(name);
-      wrap.addEventListener('click', () => window.XVThemes.select(p.key));
+      wrap.addEventListener('click', () => {
+        window.XVThemes.select(p.key);
+        renderThemeTiles();
+        renderAccentRow();
+      });
       tiles.appendChild(wrap);
     }
   }
@@ -190,7 +194,10 @@
       const dot = document.createElement('span');
       dot.className = 'accent-dot' + (st.accent === c ? ' active' : '');
       dot.style.background = c;
-      dot.addEventListener('click', () => window.XVThemes.setAccent(c));
+      dot.addEventListener('click', () => {
+        window.XVThemes.setAccent(c);
+        renderAccentRow();
+      });
       row.appendChild(dot);
     }
     $('accent-color-input').value = st.accent;
