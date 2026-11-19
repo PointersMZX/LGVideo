@@ -102,7 +102,7 @@ const DEFAULT_SETTINGS = {
     { value: "https://jx.hls.one/?url=", label: "HLS解析" },
   ],
   dramaSites: [], // 第三方导航：默认清空（维护者要求）
-  updateChannel: 'github', // 固定 GitHub 渠道（Gitee 已移除；异常值经下方兜底回落 github）
+  // 更新渠道固定 GitHub（Gitee 已完整移除）
   agreedPact: false,
 };
 
@@ -666,14 +666,14 @@ function broadcastUpdate(payload) {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('update-event', payload);
 }
 
-async function checkUpdate(channel) {
-  const ch = UPDATE_CHANNELS[channel] || UPDATE_CHANNELS.github;
+async function checkUpdate() {
+  const ch = UPDATE_CHANNELS.github;
   const release = await requestJson(ch.api, ch.headers);
   const latest = release.tag_name || '';
   const hasUpdate = !!latest && isNewerVersion(latest, app.getVersion());
   const asset = matchUpdateAsset(release.assets);
   if (hasUpdate && !asset) throw new Error('该 Release 未附带可用的 Windows 安装包（.exe）');
-  lastRelease = { channel, release, asset, latest };
+  lastRelease = { channel: 'github', release, asset, latest };
   downloadedInstaller = null;
   broadcastUpdate({
     type: 'result',
@@ -682,15 +682,14 @@ async function checkUpdate(channel) {
     current: app.getVersion(),
     notes: release.body || '',
     releaseUrl: release.html_url || ch.page,
-    channel,
+    channel: 'github',
   });
   return { hasUpdate, latest };
 }
 
 async function downloadUpdate() {
   if (!lastRelease || !lastRelease.hasUpdate) {
-    const s = getSettings();
-    await checkUpdate(s.updateChannel || 'github');
+    await checkUpdate();
   }
   const asset = lastRelease.asset;
   const dir = path.join(app.getPath('userData'), 'updates');
@@ -722,9 +721,8 @@ function installUpdate() {
 }
 
 ipcMain.handle('update:check', async () => {
-  const s = getSettings();
   try {
-    return await checkUpdate(s.updateChannel || 'github');
+    return await checkUpdate();
   } catch (e) {
     broadcastUpdate({ type: 'error', message: String(e.message || e) });
     throw e;

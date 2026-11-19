@@ -10,23 +10,20 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 双渠道更新检查（GitHub 官方 / Gitee 镜像），端点与桌面更新器一致。
+ * 更新检查（GitHub 单渠道，Gitee 已完整移除），端点与桌面更新器一致。
  * Android 只做「发现新版本 → 外部浏览器拉 APK」，不做应用内下载安装。
  */
 public final class UpdateChecker {
 
     private static final String GITHUB_API =
             "https://api.github.com/repos/PointersMZX/LGVideo/releases/latest";
-    private static final String GITEE_API =
-            "https://gitee.com/api/v5/repos/PointersMZX/LGVideo/releases/latest";
 
     private UpdateChecker() {}
 
     /** 拉取最新 release JSON；失败返回 null */
-    public static JSONObject fetchLatest(String channel) {
+    public static JSONObject fetchLatest() {
         try {
-            final String url = "gitee".equals(channel) ? GITEE_API : GITHUB_API;
-            final String body = httpGet(url);
+            final String body = httpGet(GITHUB_API);
             return body == null ? null : new JSONObject(body);
         } catch (Exception e) {
             return null;
@@ -43,8 +40,8 @@ public final class UpdateChecker {
         return false;
     }
 
-    /** 在 release assets 里找安卓安装包直链（universal / 任意 apk） */
-    public static String findApkUrl(JSONObject release, String channel) {
+    /** 在 release assets 里找安卓安装包直链（android 命名资产优先，任意 .apk 兜底） */
+    public static String findApkUrl(JSONObject release) {
         try {
             final JSONArray assets = release.optJSONArray("assets");
             if (assets == null) return null;
@@ -52,11 +49,9 @@ public final class UpdateChecker {
             for (int i = 0; i < assets.length(); i++) {
                 final JSONObject a = assets.getJSONObject(i);
                 final String name = a.optString("name", "").toLowerCase();
-                final String url = "gitee".equals(channel)
-                        ? a.optString("browser_download_url", "")
-                        : a.optString("browser_download_url", "");
+                final String url = a.optString("browser_download_url", "");
                 if (!name.endsWith(".apk")) continue;
-                if (name.contains("universal")) return url;
+                if (name.contains("android")) return url;
                 if (fallback == null) fallback = url;
             }
             return fallback;

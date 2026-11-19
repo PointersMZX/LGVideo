@@ -95,7 +95,6 @@ public final class JsonStore {
             + "{\"value\":\"https://jx.hls.one/?url=\",\"label\":\"HLS解析\"}"
             + "],"
             + "\"dramaSites\":[],"
-            + "\"updateChannel\":\"\","
             + "\"agreedPact\":false"
             + "}";
 

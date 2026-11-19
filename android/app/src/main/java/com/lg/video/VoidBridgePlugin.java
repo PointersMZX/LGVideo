@@ -334,14 +334,13 @@ public class VoidBridgePlugin extends Plugin {
         resolveOk(call);
     }
 
-    // ───────────────────────── 双渠道更新（GitHub / Gitee） ─────────────────────────
+    // ───────────────────────── 更新检查（GitHub 单渠道；Gitee 已完整移除） ─────────────────────────
 
     @PluginMethod
     public void checkForUpdates(PluginCall call) {
-        final String channel = readUpdateChannel();
         final Thread t = new Thread(() -> {
             try {
-                final JSONObject release = UpdateChecker.fetchLatest(channel);
+                final JSONObject release = UpdateChecker.fetchLatest();
                 if (release == null) {
                     emitUpdateEvent(errEvent("无法连接更新服务器，请检查网络"));
                     resolveOk(call);
@@ -351,7 +350,7 @@ public class VoidBridgePlugin extends Plugin {
                 final String current = versionName();
                 final boolean hasUpdate = UpdateChecker.isNewer(latest, current);
                 if (hasUpdate) {
-                    pendingApkUrl = UpdateChecker.findApkUrl(release, channel);
+                    pendingApkUrl = UpdateChecker.findApkUrl(release);
                 }
                 final JSONObject evt = new JSONObject();
                 evt.put("type", "result");
@@ -398,11 +397,6 @@ public class VoidBridgePlugin extends Plugin {
     }
 
     // ───────────────────────── 工具 ─────────────────────────
-
-    private String readUpdateChannel() {
-        // Android 渠道固定 GitHub（与 Pointers-BOX v2.6.0 一致；网盘只做手动下载入口）
-        return "github";
-    }
 
     private static JSONObject errEvent(String message) {
         final JSONObject evt = new JSONObject();
