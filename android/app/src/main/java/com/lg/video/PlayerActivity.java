@@ -62,7 +62,7 @@ public class PlayerActivity extends Activity {
         store = new JsonStore(this);
 
         root = new FrameLayout(this);
-        root.setBackgroundColor(0xFF0d0716);
+        root.setBackgroundColor(0xFF000000);
         setContentView(root);
 
         final Intent intent = getIntent();
@@ -77,7 +77,7 @@ public class PlayerActivity extends Activity {
                 .build();
 
         webView = new WebView(this);
-        webView.setBackgroundColor(0xFF0d0716);
+        webView.setBackgroundColor(0xFF000000);
         root.addView(webView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 

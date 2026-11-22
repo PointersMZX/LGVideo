@@ -4,30 +4,30 @@
 }
 
 :root {
-    /* XingyuMusic · xingyu（紫金黑）色板 */
-    --primary-bg: #0d0716;
-    --secondary-bg: #170d24;
-    --sidebar-bg: #120a1e;
-    --accent-color: #321b4d;
+    /* 双主题静态回退（运行时由 themes.js 按主题覆盖） */
+    --primary-bg: #000000;
+    --secondary-bg: #101010;
+    --sidebar-bg: #0a0a0a;
+    --accent-color: #141414;
     --highlight-color: #8b30d6;
-    --gold-color: #e8c98a;
-    --text-color: #f0ecff;
-    --text-secondary-color: #9a8fc0;
+    --gold-color: #8b30d6;
+    --text-color: #f5f5f5;
+    --text-secondary-color: #9a9a9a;
     --font-family: 'HarmonyOS Sans SC', sans-serif;
     --border-radius: 8px;
     /* 液态玻璃主题键（XingyuMusic 主题体系，liquid-glass.js 消费） */
     --liquid-glass: true;
-    --color-glass-edge: rgba(232, 208, 158, 0.75);
-    --color-glass-base: rgba(13, 7, 22, 0.42);
-    --color-glass-tint: rgba(124, 32, 194, 0.38);
-    --color-content-background: rgba(13, 7, 22, 0.78);
-    /* 紫金黑舞台光：紫色舞台光 + 金色微光，给玻璃折射提供景深（XingyuMusic xingyu 原值） */
-    --stage-background: radial-gradient(1100px 700px at 18% -10%, rgba(124, 32, 194, 0.4), transparent 62%), radial-gradient(900px 600px at 88% 110%, rgba(212, 176, 111, 0.16), transparent 55%), radial-gradient(700px 500px at 55% 50%, rgba(63, 15, 90, 0.35), transparent 70%);
+    --color-glass-edge: transparent;
+    --color-glass-base: rgba(0, 0, 0, 0.42);
+    --color-glass-tint: transparent;
+    --color-content-background: rgba(0, 0, 0, 0.78);
+    /* 舞台光：无（★11-22 去紫定案；深色纯黑/浅色纯白，紫只留强调色） */
+    --stage-background: none;
     /* ── 液态玻璃材质参数（06 规范六层模型的 Web 落点，themes.js 按主题覆盖） ── */
     /* surface.blur / color.tint+alpha / geometry.border / lighting.rim+sheen / shadow */
     --glass-blur: 18px;
     --glass-alpha: 0.42;
-    --glass-tint-rgb: 13, 7, 22;
+    --glass-tint-rgb: 0, 0, 0;
     --glass-border-c: rgba(255, 255, 255, 0.16);
     --glass-rim: rgba(255, 255, 255, 0.34);
     --glass-rim-b: rgba(255, 255, 255, 0.10);
@@ -292,17 +292,17 @@ body {
 /* 窗口按钮 hover：XingyuMusic 三色（绿=最小化 / 青=最大化 / 桃=关闭） */
 .window-control-button#minimize-button:hover {
     background: #85c43b;
-    color: #0d0716;
+    color: #000000;
 }
 
 .window-control-button#maximize-button:hover {
     background: #3bc2b2;
-    color: #0d0716;
+    color: #000000;
 }
 
 .window-control-button#close-button:hover {
     background: #fab4a0;
-    color: #0d0716;
+    color: #000000;
 }
 
 /* ═══════════════ 壳（左导航 + 右页面，照 Pointers-BOX） ═══════════════ */
@@ -778,7 +778,7 @@ webview {
     justify-content: center;
     padding: 2vh 5vw;
     text-align: center;
-    background: radial-gradient(circle at center, #170d24 0%, #0d0716 100%);
+    background: radial-gradient(circle at center, #101010 0%, #000000 100%);
     color: var(--text-color);
     overflow: hidden;
     gap: 2vh;
@@ -1681,7 +1681,7 @@ input[type="color"] {
     left: 200px;
     right: 0;
     bottom: 0;
-    background-color: rgba(13, 7, 22, 0.92);
+    background-color: rgba(0, 0, 0, 0.92);
     backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;

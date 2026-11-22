@@ -66,7 +66,7 @@
   `;
   // 解析模式 = 紫金黑（XingyuMusic xingyu）；第三方导航模式 = 黑底绿字（站点皮肤，功能保留）
   const AV_VARS = {
-    parse: `:root { --av-primary-bg: #0d0716; --av-accent-color: #321b4d; --av-highlight-color: #e8c98a; }`,
+    parse: `:root { --av-primary-bg: #000000; --av-accent-color: #141414; --av-highlight-color: #8b30d6; }`,
     nav: `:root { --av-primary-bg: #000000; --av-accent-color: #333333; --av-highlight-color: #C0FAA0; }`,
   };
 
@@ -603,7 +603,7 @@
 
 // 全局 toast（原 renderer.js showToast）
 function showToast(message, type = 'info') {
-  const bgColor = type === 'error' ? '#ff6768' : (type === 'success' ? '#4caf50' : 'var(--accent-color, #321b4d)');
+  const bgColor = type === 'error' ? '#ff6768' : (type === 'success' ? '#4caf50' : 'var(--accent-color, #141414)');
   Toastify({
     text: message,
     duration: 3000,

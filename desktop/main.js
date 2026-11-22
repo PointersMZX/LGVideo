@@ -286,7 +286,7 @@ function openPlayerWindow(payload) {
     height: 540,
     minWidth: 640,
     minHeight: 360,
-    backgroundColor: '#0d0716',
+    backgroundColor: '#000000',
     title: payload && payload.title ? payload.title : 'LG Video',
     icon: path.join(__dirname, 'assets', 'images', 'icon.png'),
     webPreferences: {
@@ -358,7 +358,7 @@ function createWindow() {
     minHeight: 620,
     frame: false,
     titleBarStyle: 'hidden',
-    backgroundColor: '#0d0716',
+    backgroundColor: '#000000',
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

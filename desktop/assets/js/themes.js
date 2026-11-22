@@ -31,14 +31,15 @@
   }
 
   // ---------- 材质档位（Pointers-BOX buildTheme SURFACES 数值 + LGVideo 流动背景） ----------
-  // dark：深空紫底 + 流动光影（v1.2.0 定稿卖点）；light：暖白底低饱和流动
+  // ★11-22 用户定案：深色=纯黑、浅色=纯白（基底零紫调，紫色只出现在强调色且可自定义）；
+  // 流动光斑去紫改中性白光斑（保留流动质感、不染色），舞台光取消。
   const SURFACES = {
     dark: {
-      appBg: '#0d0716',
-      secondaryBg: '#170d24',
-      sidebarBg: '#120a1e',
-      textPrimary: '#f0ecff',
-      textMuted: '#9a8fc0',
+      appBg: '#000000',
+      secondaryBg: '#101010',
+      sidebarBg: '#0a0a0a',
+      textPrimary: '#f5f5f5',
+      textMuted: '#9a9a9a',
       // 磨砂三件套
       blur: 24, saturate: 150, brightness: 1.12,
       sidebarBlur: 30, sidebarSaturate: 165,
@@ -54,24 +55,24 @@
       grainOpacity: 0.06,
       navActive: 'rgba(255, 255, 255, 0.10)',
       navActiveRing: 'rgba(255, 255, 255, 0.22)',
-      navColor: 'rgba(240, 236, 255, 0.45)',
-      navColorHover: 'rgba(240, 236, 255, 0.85)',
+      navColor: 'rgba(245, 245, 245, 0.45)',
+      navColorHover: 'rgba(245, 245, 245, 0.85)',
       overlay: 'rgba(0, 0, 0, 0.45)',
-      // 流动背景（紫金青三球 + 低透锥形整层旋转，v1.2.0 标定）
+      // 流动背景（中性白光斑，去紫；质感保留、零染色）
       flow: {
         '--flow-speed': '1',
-        '--bg-blob-1': 'rgba(124, 32, 194, 0.5)',
-        '--bg-blob-2': 'rgba(212, 176, 111, 0.28)',
-        '--bg-blob-3': 'rgba(88, 28, 150, 0.45)',
-        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(124, 32, 194, 0.14), rgba(88, 28, 150, 0.10), rgba(212, 176, 111, 0.07), rgba(124, 32, 194, 0.14))',
+        '--bg-blob-1': 'rgba(255, 255, 255, 0.05)',
+        '--bg-blob-2': 'rgba(255, 255, 255, 0.04)',
+        '--bg-blob-3': 'rgba(255, 255, 255, 0.04)',
+        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.03))',
       },
     },
     light: {
-      appBg: '#eef0f4',
+      appBg: '#ffffff',
       secondaryBg: '#ffffff',
       sidebarBg: '#ffffff',
-      textPrimary: '#1f1629',
-      textMuted: '#6f6888',
+      textPrimary: '#111111',
+      textMuted: '#6f6f6f',
       blur: 22, saturate: 140, brightness: 0.94,
       sidebarBlur: 28, sidebarSaturate: 150,
       bottomnavBlur: 28, bottomnavSaturate: 160,
@@ -90,10 +91,10 @@
       overlay: 'rgba(15, 23, 42, 0.30)',
       flow: {
         '--flow-speed': '1',
-        '--bg-blob-1': 'rgba(124, 32, 194, 0.10)',
-        '--bg-blob-2': 'rgba(212, 176, 111, 0.10)',
-        '--bg-blob-3': 'rgba(88, 28, 150, 0.07)',
-        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(124, 32, 194, 0.05), rgba(212, 176, 111, 0.04), rgba(124, 32, 194, 0.05))',
+        '--bg-blob-1': 'rgba(0, 0, 0, 0.03)',
+        '--bg-blob-2': 'rgba(0, 0, 0, 0.025)',
+        '--bg-blob-3': 'rgba(0, 0, 0, 0.02)',
+        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.015), rgba(0, 0, 0, 0.02))',
       },
     },
   };
@@ -129,8 +130,8 @@
     put('--gold-color', a);
     put('--lgv-accent', a);
     put('--lgv-accent-soft', hexToRgba(a, 0.35));
-    // 面板底色（accent-color 在 LGVideo 语义=面板实底，深浅各一档）
-    put('--accent-color', isDark ? '#321b4d' : '#e8e4f5');
+    // 面板底色（accent-color 在 LGVideo 语义=面板实底，深浅各一档；★11-22 去紫改中性）
+    put('--accent-color', isDark ? '#141414' : '#f2f2f2');
     put('--text-color', t.textPrimary);
     put('--text-secondary-color', t.textMuted);
     // 玻璃恒开（双主题各自磨砂标定）
@@ -138,7 +139,7 @@
     put('--color-glass-tint', 'transparent');
     put('--color-glass-edge', 'transparent');
     put('--color-glass-base', 'transparent');
-    put('--color-content-background', isDark ? 'rgba(13, 7, 22, 0.55)' : 'rgba(255, 255, 255, 0.55)');
+    put('--color-content-background', isDark ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 255, 255, 0.55)');
     // 导航
     put('--nav-color', t.navColor);
     put('--nav-color-hover', t.navColorHover);
@@ -149,7 +150,7 @@
     // 玻璃材质链（零染色：blur/saturate/brightness 三件套 + 棱线/泛光/光泽/投影）
     put('--glass-blur', t.blur + 'px');
     put('--glass-alpha', '0.42');
-    put('--glass-tint-rgb', isDark ? '13, 7, 22' : '255, 255, 255');
+    put('--glass-tint-rgb', isDark ? '0, 0, 0' : '255, 255, 255');
     put('--glass-border-c', t.border);
     put('--glass-rim', t.rimTop);
     put('--glass-rim-b', t.rimBottom);
@@ -168,10 +169,8 @@
     put('--lgv-sheen-color', t.sheenColor);
     put('--lgv-grain-opacity', String(t.grainOpacity));
     put('--lgv-modal-backdrop', `blur(40px) saturate(160%)${isDark ? '' : ' brightness(1.06)'}`);
-    // 流动背景（v1.2.0 卖点保留）+ 舞台光（dark 紫光景深 / light 干净）
-    put('--stage-background', isDark
-        ? 'radial-gradient(1100px 700px at 18% -10%, rgba(124, 32, 194, 0.4), transparent 62%), radial-gradient(900px 600px at 88% 110%, rgba(212, 176, 111, 0.16), transparent 55%), radial-gradient(700px 500px at 55% 50%, rgba(63, 15, 90, 0.35), transparent 70%)'
-        : 'none');
+    // 流动背景（中性白光斑保留质感）；★11-22 舞台光取消（去紫，深色=纯黑、浅色=纯白）
+    put('--stage-background', 'none');
     for (const [k, val] of Object.entries(t.flow)) put(k, val);
 
     setThemeVars(`:root{${v.join('')}}`);

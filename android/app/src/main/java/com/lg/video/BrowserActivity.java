@@ -159,7 +159,7 @@ public class BrowserActivity extends Activity {
 
     private void buildUi() {
         root = new FrameLayout(this);
-        root.setBackgroundColor(0xFF0d0716);
+        root.setBackgroundColor(0xFF000000);
 
         final LinearLayout column = new LinearLayout(this);
         column.setOrientation(LinearLayout.VERTICAL);
@@ -260,8 +260,8 @@ public class BrowserActivity extends Activity {
             chip.setOrientation(LinearLayout.HORIZONTAL);
             chip.setGravity(Gravity.CENTER_VERTICAL);
             chip.setPadding(dp(10), 0, dp(6), 0);
-            chip.setBackground(roundedBg(idx == session.activeIndex ? 0xFF321b4d : 0xFF221733,
-                    idx == session.activeIndex ? 0xFFe8c98a : 0xFF3a2c50));
+            chip.setBackground(roundedBg(idx == session.activeIndex ? 0xFF141414 : 0xFF0F0F0F,
+                    idx == session.activeIndex ? 0xFFe8c98a : 0xFF1E1E1E));
             final TextView title = new TextView(this);
             title.setText(t.title == null || t.title.isEmpty() ? hostOf(t.url) : t.title);
             title.setTextSize(12f);
@@ -293,7 +293,7 @@ public class BrowserActivity extends Activity {
         add.setTextSize(16f);
         add.setTextColor(0xFFFFFFFF);
         add.setGravity(Gravity.CENTER);
-        add.setBackground(roundedBg(0xFF221733, 0xFF3a2c50));
+        add.setBackground(roundedBg(0xFF0F0F0F, 0xFF1E1E1E));
         add.setOnClickListener(v -> newTab());
         tabStrip.addView(add, addParams);
         tabScroll.post(() -> tabScroll.smoothScrollTo(Integer.MAX_VALUE, 0));
@@ -351,7 +351,7 @@ public class BrowserActivity extends Activity {
         final WebView wv = new WebView(this);
         wv.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        wv.setBackgroundColor(0xFF0d0716);
+        wv.setBackgroundColor(0xFF000000);
         stack.addView(wv);
         activeWebView = wv;
         configureWebView(wv);

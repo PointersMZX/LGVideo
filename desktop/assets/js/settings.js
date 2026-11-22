@@ -156,8 +156,8 @@
     tiles.innerHTML = '';
     const st = window.XVThemes.getState();
     const previews = [
-      { key: 'dark', name: '深色', bg: 'linear-gradient(150deg, #0d0716 55%, #8b30d6 55%)' },
-      { key: 'light', name: '浅色', bg: 'linear-gradient(150deg, #eef0f4 55%, #8b30d6 55%)' },
+      { key: 'dark', name: '深色', bg: 'linear-gradient(150deg, #000000 55%, #8b30d6 55%)' },
+      { key: 'light', name: '浅色', bg: 'linear-gradient(150deg, #ffffff 55%, #8b30d6 55%)' },
     ];
     for (const p of previews) {
       const wrap = document.createElement('div');
