@@ -340,12 +340,16 @@ public class BrowserActivity extends Activity {
     @SuppressLint("SetJavaScriptEnabled")
     private void mountTab(int idx, boolean load) {
         final BrowserSession.Tab t = session.tabs.get(idx);
-        // 卸载旧 WebView
+        // 卸载旧 WebView（★11-22 补 destroy：原先只 removeView+onPause，切 tab 一次泄漏
+        // 一个整 WebView，内存滚雪球 → 多标签/选目录后系统 OOM 杀进程=用户报「闪退」根因）
         if (activeWebView != null) {
             final String lastUrl = activeWebView.getUrl();
             if (lastUrl != null) t.url = lastUrl;
+            t.title = activeWebView.getTitle() != null ? activeWebView.getTitle() : t.title;
+            activeWebView.loadUrl("about:blank");
             activeWebView.onPause();
             stack.removeView(activeWebView);
+            activeWebView.destroy();
             activeWebView = null;
         }
         final WebView wv = new WebView(this);

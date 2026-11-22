@@ -61,6 +61,8 @@
 
     // --- 原生内嵌浏览器（Android 专属，桌面 preload 无此方法）---
     openBrowser: (opts) => call('openBrowser', opts),
+    // 浏览器会话快照（主界面会话卡；桌面端无原生浏览器 → 恒空态）
+    getBrowserSession: () => call('getBrowserSession').catch(() => null),
 
     // --- 双渠道更新（Android：检查提示 + 外部浏览器拉 APK）---
     checkForUpdates: () => call('checkForUpdates'),

@@ -300,6 +300,31 @@
     }, opts));
   }
 
+  // ---------- 会话卡（★11-22：切出后主界面显示原生浏览器会话，不再「几乎空白」）----------
+  function refreshSessionCard() {
+    if (!NATIVE_BROWSER) return;
+    const card = document.getElementById('android-session-card');
+    if (!card) return;
+    window.voidAPI.getBrowserSession().then((sess) => {
+      if (!sess || !sess.started || !(sess.tabsCount > 0)) { card.hidden = true; return; }
+      card.hidden = false;
+      const line = document.getElementById('session-card-line');
+      const count = document.getElementById('session-card-count');
+      line.textContent = sess.activeTitle || sess.activeUrl || '浏览器';
+      line.title = sess.activeUrl || '';
+      count.textContent = sess.tabsCount > 1 ? sess.tabsCount + ' 个标签 · 点击继续' : '点击继续浏览';
+      const btn = document.getElementById('session-card-resume');
+      if (btn) btn.onclick = () => {
+        openNativeBrowser({ resume: true, url: sess.activeUrl || settings.browser.startUrl || 'https://v.qq.com' });
+        refreshSessionCard();
+      };
+    }).catch(() => {});
+  }
+  // 从原生浏览器切出（主 webview 重新可见）时刷新会话卡
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshSessionCard();
+  });
+
   // ---------- 标签条渲染 ----------
   function renderTabs() {
     // 移除旧 pill（保留 + 按钮）
@@ -527,9 +552,11 @@
       // Android：浏览器默认即开（恢复既有会话或打开起始页，无引导卡）；控制行「打开浏览器」随时恢复
       if (NATIVE_BROWSER) {
         openNativeBrowser({ resume: true, url: settings.browser.startUrl || 'https://v.qq.com' });
+        refreshSessionCard();
         const openBtn = document.getElementById('android-browser-open');
         if (openBtn) openBtn.addEventListener('click', () => {
           openNativeBrowser({ resume: true, url: settings.browser.startUrl || 'https://v.qq.com' });
+          refreshSessionCard();
         });
       }
 

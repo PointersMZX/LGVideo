@@ -334,6 +334,21 @@ public class VoidBridgePlugin extends Plugin {
         resolveOk(call);
     }
 
+    /** ★11-22 主界面会话卡数据源：浏览器标签/当前标签（切出后主界面不「几乎空白」） */
+    @PluginMethod
+    public void getBrowserSession(PluginCall call) {
+        final JSONObject out = new JSONObject();
+        final BrowserSession s = BrowserSession.get();
+        final BrowserSession.Tab act = s.activeTab();
+        try {
+            out.put("activeUrl", act != null ? act.url : "");
+            out.put("activeTitle", act != null ? act.title : "");
+            out.put("tabsCount", s.tabs.size());
+            out.put("started", s.lastPayload != null || s.tabs.size() > 0);
+        } catch (Exception ignored) {}
+        resolveJson(call, out);
+    }
+
     // ───────────────────────── 更新检查（GitHub 单渠道；Gitee 已完整移除） ─────────────────────────
 
     @PluginMethod

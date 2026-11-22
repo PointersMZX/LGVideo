@@ -110,8 +110,8 @@
     z-index: 1200;
     border-radius: 9999px;
     background: transparent;
-    backdrop-filter: var(--lgv-bn-backdrop, blur(30px) saturate(175%));
-    -webkit-backdrop-filter: var(--lgv-bn-backdrop, blur(30px) saturate(175%));
+    backdrop-filter: var(--lgv-bn-backdrop, blur(32px) saturate(175%));
+    -webkit-backdrop-filter: var(--lgv-bn-backdrop, blur(32px) saturate(175%));
     border: 1px solid var(--lgv-edge, rgba(255, 255, 255, 0.14));
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.10),

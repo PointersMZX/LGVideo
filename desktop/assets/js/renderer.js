@@ -114,23 +114,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     requestAnimationFrame(() => window.__bnIndicatorSync(false));
 
     // 拖动跟手：按下跟移（钳制在栏内），松手吸附最近项并切换页
-    let dragX = 0, dragBaseLeft = 0, dragMoved = false;
+    // ★11-22 修「四个按钮无法切换」：不再 setPointerCapture（capture 会吞掉
+    // bn-item 按钮的原生 click，tap 切页全失效）；改 window 级 move/up 监听跟手。
+    let dragX = 0, dragBaseLeft = 0, dragMoved = false, dragging = false;
+    // 拖拽松手后浏览器会在按下位置的按钮上派发合成 click，会把刚吸附的页冲掉
+    let suppressClick = false;
+    let suppressTimer = null;
     const clamp = (v) => Math.max(4, Math.min(nav.clientWidth - IND_W - 4, v));
     nav.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('button')) { /* tap 走 click；drag 允许从项上开始 */ }
       dragX = e.clientX;
       dragBaseLeft = parseFloat(indicator.style.left || '0');
       dragMoved = false;
-      nav.setPointerCapture(e.pointerId);
+      dragging = true;
     });
-    nav.addEventListener('pointermove', (e) => {
-      if (e.buttons === 0) return;
+    window.addEventListener('pointermove', (e) => {
+      if (!dragging || e.buttons === 0) return;
       const dx = e.clientX - dragX;
       if (Math.abs(dx) > 8) dragMoved = true;
       if (dragMoved) indicator.style.left = clamp(dragBaseLeft + dx) + 'px';
-    });
-    nav.addEventListener('pointerup', (e) => {
-      if (!dragMoved) return; // tap：bn-item 的 click 原生处理
+    }, { passive: true });
+    window.addEventListener('pointerup', (e) => {
+      if (!dragging) return;
+      dragging = false;
+      if (!dragMoved) return; // tap：bn-item 的 click 原生处理（未 capture，click 正常派发）
+      suppressClick = true;
+      // 若浏览器最终没派发合成 click，400ms 后自清（防误吞下一次正常 tap）
+      clearTimeout(suppressTimer);
+      suppressTimer = setTimeout(() => { suppressClick = false; }, 400);
       const x = e.clientX - nav.getBoundingClientRect().left;
       let idx = 0, best = Infinity;
       bnItems().forEach((it, i) => {
@@ -142,6 +152,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (targetPage !== currentActivePage()) switchPage(targetPage); // 异页：switchPage 内吸附
       else window.__bnIndicatorSync(true); // 同页：指示条回弹吸附原位
     });
+    // capture 拦截拖拽后的合成 click（tap<8px 未置 suppressClick，正常放行给 bn-item click 切页）
+    nav.addEventListener('click', (e) => {
+      if (!suppressClick) return;
+      suppressClick = false;
+      e.stopPropagation();
+      e.preventDefault();
+    }, true);
   }
 
   // ---------- 窗口控制（桌面顶栏；Android 隐藏但保留绑定防御） ----------
@@ -166,20 +183,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   function applyGlass() {
     const st = window.XVThemes.getState();
     const dark = st.theme === 'dark';
-    window.LGVGlass.setSvgGlass(true, { ref: dark ? 1.1 : 1.0, edge: dark ? 1.1 : 1.15 }, [
-      // 内容玻璃卡：主题磨砂档位
-      { selector: '.glass-card', cssVar: '--lgv-g-backdrop', tail: dark
-          ? { blur: 24, saturate: 150, brightness: 1.12 }
-          : { blur: 22, saturate: 140, brightness: 0.94 } },
-      // 侧栏（桌面）
-      { selector: '.sidebar', cssVar: '--lgv-sb-backdrop', tail: dark
-          ? { blur: 30, saturate: 165, brightness: 1 }
-          : { blur: 28, saturate: 150, brightness: 1 } },
-      // 底栏（Android）：悬浮小件加大折射强度（refMult）+ 更厚磨砂，玻璃感更足
-      { selector: '.bottom-nav', cssVar: '--lgv-bn-backdrop', refMult: 1.7, tail: dark
-          ? { blur: 30, saturate: 175, brightness: 1.06 }
-          : { blur: 28, saturate: 160, brightness: 1 } },
-    ]);
+    const targets = [];
+    if (!IS_ANDROID) {
+      // 桌面：内容玻璃卡 + 侧栏全开
+      targets.push(
+        { selector: '.glass-card', cssVar: '--lgv-g-backdrop', tail: dark
+            ? { blur: 24, saturate: 150, brightness: 1.12 }
+            : { blur: 22, saturate: 140, brightness: 0.94 } },
+        { selector: '.sidebar', cssVar: '--lgv-sb-backdrop', tail: dark
+            ? { blur: 30, saturate: 165, brightness: 1 }
+            : { blur: 28, saturate: 150, brightness: 1 } },
+      );
+    }
+    // 安卓：只给底栏开折射（★11-22：内容卡折射层×玻璃磨砂×双 webview 把 GPU tile
+    // 内存打超限 → 「切出后几乎空白页」；内容卡回落 CSS 磨砂配方，玻璃质感保留）
+    targets.push(
+      { selector: '.bottom-nav', cssVar: '--lgv-bn-backdrop', refMult: 2.0, tail: dark
+          ? { blur: 32, saturate: 175, brightness: 1.05 }
+          : { blur: 30, saturate: 160, brightness: 1 } },
+    );
+    window.LGVGlass.setSvgGlass(true, { ref: dark ? 1.1 : 1.0, edge: dark ? 1.1 : 1.15 }, targets);
   }
   applyGlass();
   // 主题切换时刷新折射档位（themes.js 每次切换都会触发 hydrate → 这里监听 settings 回流）

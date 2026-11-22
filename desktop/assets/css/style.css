@@ -37,10 +37,10 @@
     /* motion.flowSpeed（动画时长 = 基础秒数 ÷ 该值，0 = 静止） */
     --flow-speed: 1;
     /* 流动背景色球与锥形整层 */
-    --bg-blob-1: rgba(124, 32, 194, 0.5);
-    --bg-blob-2: rgba(212, 176, 111, 0.28);
-    --bg-blob-3: rgba(88, 28, 150, 0.45);
-    --bg-flow-conic: conic-gradient(from 0deg at 50% 50%, rgba(124, 32, 194, 0.14), rgba(88, 28, 150, 0.10), rgba(212, 176, 111, 0.07), rgba(124, 32, 194, 0.14));
+    --bg-blob-1: rgba(255, 255, 255, 0.06);
+    --bg-blob-2: rgba(255, 255, 255, 0.10);
+    --bg-blob-3: rgba(255, 255, 255, 0.05);
+    --bg-flow-conic: conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.04));
     /* 指针驱动（liquid-motion.js 写入，全局 -1~1） */
     --mx: 0;
     --my: 0;
@@ -1967,6 +1967,9 @@ input[type="color"] {
 /* ── 悬浮胶囊底栏（照 BottomNav：blur(26px) saturate(155%) + 发丝边 + accent 指示条） ── */
 .platform-android .bottom-nav {
     display: flex;
+    /* ★11-22 关键：禁掉 Chromium 把底栏横滑接管成页面横滚（手势被 scroll 吃掉→
+       pointermove 到不了 JS，用户报「能划但卡住」根因）；tap 不受影响 */
+    touch-action: none;
     justify-content: space-around;
     max-width: 640px;
     margin: 0 auto;
@@ -2114,6 +2117,60 @@ input[type="color"] {
 
 .platform-android .library-layout {
     flex-direction: column;
+}
+
+/* ★11-22 创建影视窗口：桌面 left:200px 是侧栏宽度，Android 无侧栏→面板被挤到右侧留 200px 空白，贴满 */
+.platform-android .lib-editor {
+    top: 0;
+    left: 0;
+    padding: 16px 14px;
+}
+
+/* ★11-22 会话卡（切出后主界面不「几乎空白」）：垂直留白居中，不贴控制行 */
+.platform-android #android-session-card {
+    margin: 14vh auto 0;
+    max-width: 480px;
+    padding: 18px 22px;
+    border-radius: 18px;
+    text-align: center;
+    background: var(--lgv-g-base, rgba(0, 0, 0, 0.35));
+    backdrop-filter: var(--lgv-g-backdrop, blur(24px) saturate(150%));
+    -webkit-backdrop-filter: var(--lgv-g-backdrop, blur(24px) saturate(150%));
+    border: 1px solid var(--lgv-edge, rgba(255, 255, 255, 0.14));
+    box-shadow: inset 0 1px 0 var(--lgv-g-rim-top, rgba(255, 255, 255, 0.14));
+}
+.session-card-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-secondary-color);
+    margin-bottom: 8px;
+}
+.session-card-line {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-color);
+    word-break: break-all;
+    margin-bottom: 4px;
+}
+.session-card-sub {
+    font-size: 11px;
+    color: var(--text-secondary-color);
+}
+.session-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+/* ★11-22 安卓停流动动画（光斑保留静态层给折射供料，只关重绘）：
+   安卓=主界面 webview+原生浏览器 webview 双开+玻璃折射层，flow 无限动画把 tile
+   内存打超限（logcat: tile memory limits exceeded, some content may not draw）→
+   内容消失=用户报「切出后几乎空白页」根因 */
+.platform-android .bg-stage .bg-conic,
+.platform-android .bg-stage .bg-blob {
+    animation: none;
 }
 
 .platform-android .lib-list {

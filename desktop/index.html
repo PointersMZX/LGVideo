@@ -154,6 +154,17 @@
                 </div>
                 </div>
 
+                <!-- Android 会话卡（原生浏览器切出后，主界面显示会话状态+继续浏览；★11-22 定案：
+                     垂直留白居中，不堆在控制行下面） -->
+                <div id="android-session-card" class="platform-android-only" hidden>
+                    <div class="session-card-label">浏览器会话</div>
+                    <div id="session-card-line" class="session-card-line"></div>
+                    <div class="session-card-foot">
+                        <span id="session-card-count" class="session-card-sub"></span>
+                        <button id="session-card-resume" class="action-button compact" type="button">继续浏览</button>
+                    </div>
+                </div>
+
                 <div class="tab-strip" id="tab-strip"></div>
 
                 <div class="browser-toolbar">

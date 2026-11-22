@@ -43,7 +43,7 @@
       // 磨砂三件套
       blur: 24, saturate: 150, brightness: 1.12,
       sidebarBlur: 30, sidebarSaturate: 165,
-      bottomnavBlur: 30, bottomnavSaturate: 175,
+      bottomnavBlur: 32, bottomnavSaturate: 175,
       // 棱线 / 内泛光 / 光泽 / 投影 / 噪点（零染色：hi/lo 恒 transparent）
       edge: 'rgba(255, 255, 255, 0.14)',
       border: 'rgba(255, 255, 255, 0.18)',
@@ -61,10 +61,10 @@
       // 流动背景（中性白光斑，去紫；质感保留、零染色）
       flow: {
         '--flow-speed': '1',
-        '--bg-blob-1': 'rgba(255, 255, 255, 0.05)',
-        '--bg-blob-2': 'rgba(255, 255, 255, 0.04)',
-        '--bg-blob-3': 'rgba(255, 255, 255, 0.04)',
-        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.03))',
+        '--bg-blob-1': 'rgba(255, 255, 255, 0.06)',
+        '--bg-blob-2': 'rgba(255, 255, 255, 0.10)',
+        '--bg-blob-3': 'rgba(255, 255, 255, 0.05)',
+        '--bg-flow-conic': 'conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.04))',
       },
     },
     light: {
@@ -75,7 +75,7 @@
       textMuted: '#6f6f6f',
       blur: 22, saturate: 140, brightness: 0.94,
       sidebarBlur: 28, sidebarSaturate: 150,
-      bottomnavBlur: 28, bottomnavSaturate: 160,
+      bottomnavBlur: 30, bottomnavSaturate: 160,
       edge: 'rgba(15, 23, 42, 0.14)',
       border: 'rgba(15, 23, 42, 0.16)',
       rimTop: 'rgba(255, 255, 255, 0.95)',
