@@ -372,6 +372,13 @@ function createWindow() {
 
   mainWindow = new BrowserWindow(windowOptions);
 
+  // 显窗控制收归主进程：首帧渲染即显示。渲染层握手（load+rAF→showWindow）在隐藏窗里
+  // rAF 会被节流，握手永远完不成 → 窗口永远挂托盘（★11-22 用户报「直挂托盘」根因）。
+  // ready-to-show 时背景/静态 HTML 已就绪，无白闪顾虑；渲染层握手保留仅用于加 loaded 类。
+  mainWindow.once('ready-to-show', () => {
+    if (!mainWindow.isDestroyed()) mainWindow.show();
+  });
+
   if (windowState?.isMaximized) mainWindow.maximize();
 
   const saveStateDebounced = debounce(saveWindowState, 500);

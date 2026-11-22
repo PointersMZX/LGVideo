@@ -606,18 +606,22 @@
     </div>
 
     <script>
-        // Deep integration handshake: 壳渲染完成前不显示窗口（防白闪）
+        // 壳渲染完成握手（防白闪装饰类）：显窗已由主进程 ready-to-show 接管（★11-22 修复：
+        // 隐藏窗里 rAF 被节流导致原双 rAF 握手永远完不成、窗口直挂托盘）。
+        // 这里只负责 loaded 类 + 幂等 showWindow（首启切页兜底，主进程回调内发 init-page）。
         window.addEventListener('load', () => {
             const shell = document.querySelector('.shell');
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    if (shell) shell.classList.add('loaded');
-                    setTimeout(() => {
-                        window.voidAPI.showWindow();
-                    }, 50);
-                });
-            });
+            if (shell) shell.classList.add('loaded');
+            setTimeout(() => {
+                window.voidAPI && window.voidAPI.showWindow();
+            }, 50);
         });
+        // load 被挂起时的兜底（webview/资源拖住 load 事件）：1s 后无论如何完成握手
+        setTimeout(() => {
+            const shell = document.querySelector('.shell');
+            if (shell && !shell.classList.contains('loaded')) shell.classList.add('loaded');
+            window.voidAPI && window.voidAPI.showWindow();
+        }, 1000);
     </script>
     <script src="./assets/js/platform-bridge.js"></script>
     <script src="./assets/js/toastify.min.js"></script>
